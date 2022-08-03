@@ -5,19 +5,14 @@
 ///
 /// Additional parameters passed to `formatx!` replace the `{}`s within the
 /// formatting string in the order given unless named or positional parameters
-/// are used; see [`std::fmt`] for more information.
+/// are used; see [std::fmt](std::fmt) for more information.
 ///
 /// A common use for `formatx!` is concatenation and interpolation of strings at runtime.
-/// The same convention is used with [`print!`] and [`write!`] macros,
+/// The same convention is used with [print!](std::print) and [write!](core::write) macros,
 /// depending on the intended destination of the string.
 ///
 /// To convert a single value to a string, use the `to_string` method. This
-/// will use the [`Display`] formatting trait.
-///
-/// [`std::fmt`]: ../std/fmt/index.html
-/// [`print!`]: ../std/macro.print.html
-/// [`write!`]: core::write
-/// [`Display`]: core::fmt::Display
+/// will use the [Display](core::fmt::Display) formatting trait.
 ///
 /// # Panics
 ///
@@ -28,7 +23,7 @@
 /// 
 /// # Examples
 ///
-/// Any type could be formatted if it implements `std::fmt::Display` + `std::fmt::Debug` traits.
+/// Any type could be formatted if it implements [Display](std::fmt::Display) + [Debug](std::fmt::Debug) traits.
 /// 
 /// ```
 /// use formatx::formatx;

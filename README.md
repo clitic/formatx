@@ -7,20 +7,20 @@
   <a href="https://crates.io/crates/formatx">
     <img src="https://img.shields.io/crates/v/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/workflow/status/clitic/formatx/Rust?logo=github&style=flat-square">
+  <a href="https://github.com/clitic/formatx.rs">
+    <img src="https://img.shields.io/github/workflow/status/clitic/formatx.rs/Rust?logo=github&style=flat-square">
   </a>
-  <a href="https://docs.rs/kdam/latest/formatx">
-    <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
+  <a href="https://docs.rs/kdam/latest/formatx.rs">
+    <img src="https://img.shields.io/docsrs/formatx.rs?logo=docsdotrs&style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/license/clitic/formatx?style=flat-square">
+  <a href="https://github.com/clitic/formatx.rs#license">
+    <img src="https://img.shields.io/crates/l/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx">
+  <a href="https://github.com/clitic/formatx.rs">
     <img src="https://img.shields.io/github/repo-size/clitic/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/tokei/lines/github/clitic/formatx?logo=github&style=flat-square">
+  <a href="https://github.com/clitic/formatx.rs">
+    <img src="https://img.shields.io/tokei/lines/github/clitic/formatx.rs?logo=github&style=flat-square">
   </a>
 </p>
 
@@ -73,7 +73,7 @@ fn message(language: &str, name: &str, number: i32) -> String {
         "spanish" => "Hola {}, el numero es {}",
         _ => "Hi {}, the number is {}",
     };
-    formatx!(s, name, number).unwrap()
+    formatx.rs!(s, name, number).unwrap()
 }
 
 fn main() {
