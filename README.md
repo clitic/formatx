@@ -73,7 +73,7 @@ fn message(language: &str, name: &str, number: i32) -> String {
         "spanish" => "Hola {}, el numero es {}",
         _ => "Hi {}, the number is {}",
     };
-    formatx.rs!(s, name, number).unwrap()
+    formatx!(s, name, number).unwrap()
 }
 
 fn main() {
