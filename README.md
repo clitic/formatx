@@ -57,7 +57,7 @@ Or add from command line.
 $ cargo add formatx@0.1
 ```
 
-See [docs](https://docs.rs/formatx.rs) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
+See [docs](https://docs.rs/formatx) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
 know how to use it.
 
 ## Example
