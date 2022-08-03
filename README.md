@@ -10,8 +10,8 @@
   <a href="https://github.com/clitic/formatx.rs">
     <img src="https://img.shields.io/github/workflow/status/clitic/formatx.rs/Rust?logo=github&style=flat-square">
   </a>
-  <a href="https://docs.rs/kdam/latest/formatx.rs">
-    <img src="https://img.shields.io/docsrs/formatx.rs?logo=docsdotrs&style=flat-square">
+  <a href="https://docs.rs/formatx/latest/formatx">
+    <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
   </a>
   <a href="https://github.com/clitic/formatx.rs#license">
     <img src="https://img.shields.io/crates/l/formatx?style=flat-square">
@@ -57,7 +57,7 @@ Or add from command line.
 $ cargo add formatx@0.1
 ```
 
-See [docs](https://docs.rs/formatx) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
+See [docs](https://docs.rs/formatx/latest/formatx) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
 know how to use it.
 
 ## Example
