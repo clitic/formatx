@@ -58,7 +58,7 @@ $ cargo add formatx@0.1
 ```
 
 See [docs](https://docs.rs/format_template) and [examples](https://github.com/clitic/kdam/tree/main/examples) to 
-known how to use it.
+know how to use it.
 
 ## Example
 

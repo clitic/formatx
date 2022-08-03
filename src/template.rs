@@ -10,7 +10,7 @@ use crate::placeholder::Placeholder;
 /// # Example
 ///
 /// ```
-/// use format_template::Template;
+/// use formatx::Template;
 ///
 /// let mut template = "{percentage:.2}".parse::<Template>().unwrap();
 /// template.replace("percentage", 67.7892);
@@ -43,7 +43,7 @@ impl Template {
     /// # Example
     ///
     /// ```
-    /// use format_template::Template;
+    /// use formatx::Template;
     ///
     /// let template = Template::new("{percentage:.2}").unwrap();
     /// ```

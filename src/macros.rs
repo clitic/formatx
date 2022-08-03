@@ -11,13 +11,12 @@
 /// The same convention is used with [`print!`] and [`write!`] macros,
 /// depending on the intended destination of the string.
 ///
-/// To convert a single value to a string, use the [`to_string`] method. This
+/// To convert a single value to a string, use the `to_string` method. This
 /// will use the [`Display`] formatting trait.
 ///
 /// [`std::fmt`]: ../std/fmt/index.html
 /// [`print!`]: ../std/macro.print.html
 /// [`write!`]: core::write
-/// [`to_string`]: crate::string::ToString
 /// [`Display`]: core::fmt::Display
 ///
 /// # Panics
