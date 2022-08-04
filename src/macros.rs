@@ -20,14 +20,14 @@
 /// This indicates an incorrect implementation
 /// since `fmt::Write for String` never returns an error itself.
 /// Additonally `formatx!` returns a `Result` type which can be resolved later.
-/// 
+///
 /// # Examples
 ///
 /// Any type could be formatted if it implements [Display](std::fmt::Display) + [Debug](std::fmt::Debug) traits.
-/// 
+///
 /// ```
 /// use formatx::formatx;
-/// 
+///
 /// formatx!("test").unwrap().text().unwrap();
 /// formatx!("hello {}", "world!").unwrap();
 /// formatx!("x = {}, y = {y}", 10, y = 30).unwrap();
@@ -77,11 +77,82 @@ macro_rules! formatx_internal {
 mod tests {
     use crate::formatx;
 
+    macro_rules! formatx_test {
+        ($template: expr, $($values: tt)*) => {
+            assert_eq!(formatx!($template, $($values)*).unwrap(), format!($template, $($values)*))
+        }
+    }
+
+    #[test]
+    fn text() {
+        assert_eq!(formatx!("Hello").unwrap().text().unwrap(), format!("Hello"));
+    }
+
+    #[test]
+    fn positional() {
+        formatx_test!("Hello, {}!", "world");
+        formatx_test!("The number is {}", 1);
+        formatx_test!("{} {}", 1, 2);
+    }
+
+    #[test]
+    fn named() {
+        formatx_test!("{value}", value = 4);
+        formatx_test!("{argument}", argument = "test");
+        formatx_test!("{a} {c} {b}", a = "a", b = 'b', c = 3);
+    }
+
+    #[test]
+    fn intermixed() {
+        formatx_test!("{name} {}", 1, name = 2);
+    }
+
+    #[test]
+    fn width() {
+        formatx_test!("Hello {:5}!", "x");
+        formatx_test!("Hello {:05}!", -5);
+    }
+
+    #[test]
+    fn zero_width() {
+        formatx_test!("{:04}", 42);
+        formatx_test!("Hello {:05}!", 5);
+    }
+
+    #[test]
+    fn align() {
+        formatx_test!("Hello {:<5}!", "x");
+        formatx_test!("Hello {:-<5}!", "x");
+        formatx_test!("Hello {:^5}!", "x");
+        formatx_test!("Hello {:>5}!", "x");
+    }
+
+    #[test]
+    fn sign() {
+        formatx_test!("Hello {:+}!", 5)
+    }
+
     #[test]
     fn precision() {
+        formatx_test!("Hello {0} is {1:.5}", "x", 0.01)
+    }
+
+    #[test]
+    fn escaping() {
         assert_eq!(
-            formatx!("{:.2}", 99.9999).unwrap(),
-            format!("{:.2}", 99.9999),
+            formatx!("Hello {{}}").unwrap().text().unwrap(),
+            format!("Hello {{}}")
         );
+        assert_eq!(
+            formatx!("{{ Hello").unwrap().text().unwrap(),
+            format!("{{ Hello")
+        );
+    }
+
+    #[test]
+    fn debug() {
+        formatx_test!("{} {:?}", 3, 4);
+        formatx_test!("{} {:?}", 'a', 'b');
+        formatx_test!("{} {:?}", "foo\n", "bar\n");
     }
 }

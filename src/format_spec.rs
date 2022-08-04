@@ -128,49 +128,27 @@ impl FormatSpec {
         if let Some(types) = &self.types {
             if self.hashtag {
                 if types == "?" {
-                    fmtval = format!("{:#?}", value);
+                    return format!("{:#?}", value);
                 } else if types == "x?" {
-                    fmtval = format!("{:#x?}", value);
+                    return format!("{:#x?}", value);
                 } else if types == "X?" {
-                    fmtval = format!("{:#X?}", value);
+                    return format!("{:#X?}", value);
                 }
             } else {
                 if types == "?" {
-                    fmtval = format!("{:?}", value);
+                    return format!("{:?}", value);
                 } else if types == "x?" {
-                    fmtval = format!("{:x?}", value);
+                    return format!("{:x?}", value);
                 } else if types == "X?" {
-                    fmtval = format!("{:X?}", value);
+                    return format!("{:X?}", value);
                 }
             }
         }
 
         if let Some(sign) = &self.sign {
-            if sign == "+" {
+            if sign == "+" && !self.zero {
                 if crate::utils::is_number_and_positive(&fmtval) {
                     fmtval = "+".to_owned() + &fmtval;
-                }
-            }
-        }
-
-        if let Some(width) = self.width {
-            if crate::utils::is_number(&fmtval) {
-                let chars_count = fmtval.chars().count();
-
-                if self.zero && width > chars_count {
-                    fmtval = "0".repeat(width - chars_count) + &fmtval;
-                } else if width > chars_count {
-                    fmtval = " ".repeat(width - chars_count) + &fmtval;
-                }
-            } else {
-                if self.zero && self.hashtag {
-                    fmtval = format!("{:#01$}", fmtval, width);
-                } else if self.zero {
-                    fmtval = format!("{:01$}", fmtval, width);
-                } else if self.hashtag {
-                    fmtval = format!("{:#1$}", fmtval, width);
-                } else {
-                    fmtval = format!("{:1$}", fmtval, width);
                 }
             }
         }
@@ -206,12 +184,57 @@ impl FormatSpec {
             None => (),
         }
 
+        if let Some(width) = self.width {
+            if crate::utils::is_number(&fmtval) {
+                let chars_count = fmtval.chars().count();
+
+                if self.zero && width > chars_count {
+                    if let Some(sign) = &self.sign {
+                        if sign == "+" {
+                            if crate::utils::is_number_and_positive(&fmtval) {
+                                fmtval =
+                                    "+".to_owned() + &"0".repeat(width - chars_count - 1) + &fmtval;
+                            } else {
+                                fmtval = "-".to_owned()
+                                    + &"0".repeat(width - chars_count)
+                                    + &fmtval[1..];
+                            }
+                        } else if sign == "-" {
+                            fmtval =
+                                "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
+                        }
+                    } else {
+                        if fmtval.starts_with("-") {
+                            fmtval =
+                                "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
+                        } else {
+                            fmtval = "0".repeat(width - chars_count) + &fmtval;
+                        }
+                    }
+                } else if width > chars_count {
+                    fmtval = " ".repeat(width - chars_count) + &fmtval;
+                }
+            } else {
+                if self.zero && self.hashtag {
+                    fmtval = format!("{:#01$}", fmtval, width);
+                } else if self.zero {
+                    fmtval = format!("{:01$}", fmtval, width);
+                } else if self.hashtag {
+                    fmtval = format!("{:#1$}", fmtval, width);
+                } else {
+                    fmtval = format!("{:1$}", fmtval, width);
+                }
+            }
+        }
+
         fmtval
     }
 
     pub fn unsupported(&self) -> Result<(), Error> {
         if self.original.contains("$") {
-            return Err(Error::new_ufs("parameter setting through $ sign argument is not supported"));
+            return Err(Error::new_ufs(
+                "parameter setting through $ sign argument is not supported",
+            ));
         }
 
         if self.original.contains(".*") {
@@ -247,5 +270,179 @@ impl FormatSpec {
         }
 
         Ok(())
+    }
+
+    pub fn format_alt<T: Display + Debug>(&self, value: T) -> String {
+        match (
+            &self.align,
+            &self.sign,
+            self.width,
+            self.precision,
+            &self.types,
+        ) {
+            (None, None, None, None, None) => format!("{}", value),
+            (None, None, None, None, Some(types)) => {
+                if types == "x?" {
+                    format!("{:x?}", value)
+                } else if types == "X?" {
+                    format!("{:X?}", value)
+                } else {
+                    format!("{:?}", value)
+                }
+            }
+            (None, None, None, Some(precision), None) => format!("{:.1$}", value, precision),
+            (None, None, None, Some(precision), Some(types)) => {
+                if types == "x?" {
+                    format!("{:.1$x?}", value, precision)
+                } else if types == "X?" {
+                    format!("{:.1$X?}", value, precision)
+                } else {
+                    format!("{:.1$?}", value, precision)
+                }
+            }
+            (None, None, Some(width), None, None) => format!("{:1$}", value, width),
+            (None, None, Some(width), None, Some(types)) => {
+                if types == "x?" {
+                    format!("{:1$x?}", value, width)
+                } else if types == "X?" {
+                    format!("{:1$X?}", value, width)
+                } else {
+                    format!("{:1$?}", value, width)
+                }
+            }
+            (None, None, Some(width), Some(precision), None) => {
+                format!("{:1$.2$}", value, width, precision)
+            }
+            (None, None, Some(width), Some(precision), Some(types)) => {
+                if types == "x?" {
+                    format!("{:1$.2$x?}", value, width, precision)
+                } else if types == "X?" {
+                    format!("{:1$.2$X?}", value, width, precision)
+                } else {
+                    format!("{:1$.2$?}", value, width, precision)
+                }
+            }
+            (None, Some(sign), None, None, None) => {
+                if sign == "+" {
+                    format!("{:+}", value)
+                } else {
+                    format!("{:-}", value)
+                }
+            }
+            (None, Some(sign), None, None, Some(types)) => {
+                if sign == "+" {
+                    if types == "x?" {
+                        format!("{:+x?}", value)
+                    } else if types == "X?" {
+                        format!("{:+X?}", value)
+                    } else {
+                        format!("{:+?}", value)
+                    }
+                } else {
+                    if types == "x?" {
+                        format!("{:-x?}", value)
+                    } else if types == "X?" {
+                        format!("{:-X?}", value)
+                    } else {
+                        format!("{:-?}", value)
+                    }
+                }
+            }
+            (None, Some(sign), None, Some(precision), None) => {
+                if sign == "+" {
+                    format!("{:+.1$}", value, precision)
+                } else {
+                    format!("{:-.1$}", value, precision)
+                }
+            }
+            (None, Some(sign), None, Some(precision), Some(types)) => {
+                if sign == "+" {
+                    if types == "x?" {
+                        format!("{:+.1$x?}", value, precision)
+                    } else if types == "X?" {
+                        format!("{:+.1$X?}", value, precision)
+                    } else {
+                        format!("{:+.1$?}", value, precision)
+                    }
+                } else {
+                    if types == "x?" {
+                        format!("{:-.1$x?}", value, precision)
+                    } else if types == "X?" {
+                        format!("{:-.1$X?}", value, precision)
+                    } else {
+                        format!("{:-.1$?}", value, precision)
+                    }
+                }
+            }
+
+            (None, Some(sign), Some(width), None, None) => {
+                if sign == "+" {
+                    format!("{:+1$}", value, width)
+                } else {
+                    format!("{:-1$}", value, width)
+                }
+            },
+            (None, Some(sign), Some(width), None, Some(types)) => {
+                if sign == "+" {
+                    if types == "x?" {
+                        format!("{:+1$x?}", value, width)
+                    } else if types == "X?" {
+                        format!("{:+1$X?}", value, width)
+                    } else {
+                        format!("{:+1$?}", value, width)
+                    }
+                } else {
+                    if types == "x?" {
+                        format!("{:-1$x?}", value, width)
+                    } else if types == "X?" {
+                        format!("{:-1$X?}", value, width)
+                    } else {
+                        format!("{:-1$?}", value, width)
+                    }
+                }
+            },
+            (None, Some(sign), Some(width), Some(precision), None) => {
+                if sign == "+" {
+                    format!("{:+1$.2$}", value, width, precision)
+                } else {
+                    format!("{:-1$.2$}", value, width, precision)
+                }
+            },
+            (None, Some(sign), Some(width), Some(precision), Some(types)) => {
+                if sign == "+" {
+                    if types == "x?" {
+                        format!("{:+1$.2$x?}", value, width, precision)
+                    } else if types == "X?" {
+                        format!("{:+1$.2$X?}", value, width, precision)
+                    } else {
+                        format!("{:+1$.2$?}", value, width, precision)
+                    }
+                } else {
+                    if types == "x?" {
+                        format!("{:-1$.2$x?}", value, width, precision)
+                    } else if types == "X?" {
+                        format!("{:-1$.2$X?}", value, width, precision)
+                    } else {
+                        format!("{:-1$.2$?}", value, width, precision)
+                    }
+                }
+            },
+            (Some(_), None, None, None, None) => todo!(),
+            (Some(_), None, None, None, Some(_)) => todo!(),
+            (Some(_), None, None, Some(_), None) => todo!(),
+            (Some(_), None, None, Some(_), Some(_)) => todo!(),
+            (Some(_), None, Some(_), None, None) => todo!(),
+            (Some(_), None, Some(_), None, Some(_)) => todo!(),
+            (Some(_), None, Some(_), Some(_), None) => todo!(),
+            (Some(_), None, Some(_), Some(_), Some(_)) => todo!(),
+            (Some(_), Some(_), None, None, None) => todo!(),
+            (Some(_), Some(_), None, None, Some(_)) => todo!(),
+            (Some(_), Some(_), None, Some(_), None) => todo!(),
+            (Some(_), Some(_), None, Some(_), Some(_)) => todo!(),
+            (Some(_), Some(_), Some(_), None, None) => todo!(),
+            (Some(_), Some(_), Some(_), None, Some(_)) => todo!(),
+            (Some(_), Some(_), Some(_), Some(_), None) => todo!(),
+            (Some(_), Some(_), Some(_), Some(_), Some(_)) => todo!(),
+        }
     }
 }

@@ -136,14 +136,12 @@ impl Template {
             let placeholder = Placeholder::new(&query_template, &name).unwrap();
             query_template = query_template.replace(&placeholder.replacer, "");
 
-            if let Some(format_spec) = &placeholder.format_spec {
-                if let Err(err) = format_spec.unsupported() {
-                    return Err(Error::new_ufs(&format!(
-                        "{} but used in {}",
-                        err.message(),
-                        placeholder.replacer
-                    )));
-                }
+            if let Err(err) = placeholder.format_spec.unsupported() {
+                return Err(Error::new_ufs(&format!(
+                    "{} but used in {}",
+                    err.message(),
+                    placeholder.replacer
+                )));
             }
 
             if let Some(children) = template_struct.placeholders.get_mut(&name) {
@@ -271,15 +269,10 @@ impl Template {
 
         if let Some(placeholders) = self.placeholders.get(&placeholder) {
             for holder in placeholders {
-                let mut replacement = format!("{}", value);
-
-                if let Some(format_spec) = &holder.format_spec {
-                    replacement = format_spec.format(&value);
-                }
-
-                self.template = self
-                    .template
-                    .replace(&holder.replacer, &callback(replacement.clone(), holder));
+                self.template = self.template.replace(
+                    &holder.replacer,
+                    &callback(holder.format_spec.format(&value), holder),
+                );
             }
 
             let _ = self.placeholders.remove(&placeholder);

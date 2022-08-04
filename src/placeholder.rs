@@ -4,7 +4,7 @@ use crate::format_spec::FormatSpec;
 #[derive(Debug)]
 pub struct Placeholder {
     pub attributes: Option<String>,
-    pub format_spec: Option<FormatSpec>,
+    pub format_spec: FormatSpec,
     pub replacer: String,
 }
 
@@ -33,9 +33,9 @@ impl Placeholder {
             };
 
             let format_specs = if matched.rfind(":").is_some() {
-                Some(FormatSpec::new(matched.split(":").last().unwrap().to_owned()))
+                FormatSpec::new(matched.split(":").last().unwrap().to_owned())
             } else {
-                None
+                FormatSpec::new("".to_owned())
             };
 
             return Some(Self {
