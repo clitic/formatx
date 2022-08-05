@@ -26,21 +26,7 @@
 
 <p align="center">A macro for formatting non literal strings at runtime in Rust.</p>
 
-<!-- 
-A crate for string formatting using runtime format strings.
-
-This crate provides much the same facilities as `std::fmt`, with the
-additional allowance for format strings which are not known until runtime.
-Possible applications include internationalization, scripting, or other
-customization.
-
-The syntax for format strings and for macro invocations is equivalent to
-that used by `std::fmt`, including support for positional and named
-arguments. This crate shells out to the standard library implementations
-for as much as possible to ensure feature parity. -->
-
-<!-- - [How can I use a dynamic format string with the format! macro?](https://stackoverflow.com/questions/32572486/how-can-i-use-a-dynamic-format-string-with-the-format-macro) -->
-
+This library aims for formatting **strings** and **numbers** rather than an generic type. Syntax for the format string is derived from [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax).
 
 ## Getting Started
 
@@ -91,6 +77,37 @@ Hola Sofia, el numero es 2
 Hi Ashley, the number is 3
 ```
 
+## Limitations
+
+> **Examples given below will always panic.**
+
+1. Only types which implements [Display](https://doc.rust-lang.org/std/fmt/trait.Display.html) + [Debug](https://doc.rust-lang.org/std/fmt/trait.Debug.html) traits are supported. Other [formatting-traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) aren't supported.
+
+2. Local variable interpolation isn't supported.
+
+```rust
+let people = "Rustaceans";
+formatx!("Hello {people}!").unwrap().text().unwrap();
+```
+
+3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported. 
+
+```rust
+formatx!("{1} {} {0} {}", 1, 2).unwrap();
+```
+
+4. Parameter setting through `$` sign argument isn't supported.
+
+```rust
+formatx!("{:width$}!", "x", width = 5).unwrap();
+```
+
+5. An asterisk `.*` can't be used to set [precision](https://doc.rust-lang.org/std/fmt/#precision).
+
+```rust
+formatx!("{:.*}", 5, 0.01).unwrap();
+```
+
 ## Alternatives
 
 1. [strfmt](https://github.com/vitiral/strfmt)
@@ -98,7 +115,7 @@ Hi Ashley, the number is 3
 
 ## License
 
-Dual licensed under either of
+Dual Licensed
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or https://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or https://opensource.org/licenses/MIT)
+- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) ([LICENSE-APACHE](LICENSE-APACHE))
+- [MIT license](https://opensource.org/licenses/MIT) ([LICENSE-MIT](LICENSE-MIT))
