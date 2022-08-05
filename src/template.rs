@@ -134,7 +134,7 @@ impl Template {
 
         for name in template_struct.get_placeholders() {
             let placeholder = Placeholder::new(&query_template, &name).unwrap();
-            query_template = query_template.replace(&placeholder.replacer, "");
+            query_template = query_template.replacen(&placeholder.replacer, "", 1);
 
             if let Err(err) = placeholder.format_spec.unsupported() {
                 return Err(Error::new_ufs(&format!(
