@@ -67,7 +67,7 @@ impl Placeholder {
                 if value.starts_with("\"") {
                     return Some(value[1..(value[1..].find("\"").unwrap() + 1)].to_owned());
                 } else if value.starts_with("'") {
-                    return Some(value[1..(value[1..].find("'").unwrap())].to_owned());
+                    return Some(value[1..(value[1..].find("'").unwrap() + 1)].to_owned());
                 } else {
                     return value.split(" ").nth(0).map(|x| x.to_owned());
                 }
