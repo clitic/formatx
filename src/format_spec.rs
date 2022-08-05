@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display};
 
 use crate::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FormatSpec {
     pub original: String,
     align: Option<(Option<String>, String)>,

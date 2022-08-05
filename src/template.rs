@@ -16,7 +16,7 @@ use crate::placeholder::Placeholder;
 /// template.replace("percentage", 67.7892);
 /// assert_eq!(template.text().unwrap(), "67.79");
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Template {
     template: String,
     position: usize,

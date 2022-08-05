@@ -1,7 +1,7 @@
 use crate::format_spec::FormatSpec;
 
 /// Template placeholder specifications.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Placeholder {
     pub attributes: Option<String>,
     pub format_spec: FormatSpec,
