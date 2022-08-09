@@ -1,4 +1,4 @@
-<h1 align="center">formatx.rs</h1>
+<h1 align="center">formatx</h1>
 
 <p align="center">
   <a href="https://crates.io/crates/formatx">
@@ -7,20 +7,20 @@
   <a href="https://crates.io/crates/formatx">
     <img src="https://img.shields.io/crates/v/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx.rs">
-    <img src="https://img.shields.io/github/workflow/status/clitic/formatx.rs/Rust?logo=github&style=flat-square">
+  <a href="https://github.com/clitic/formatx">
+    <img src="https://img.shields.io/github/workflow/status/clitic/formatx/Rust?logo=github&style=flat-square">
   </a>
   <a href="https://docs.rs/formatx/latest/formatx">
     <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx.rs#license">
+  <a href="https://github.com/clitic/formatx#license">
     <img src="https://img.shields.io/crates/l/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx.rs">
+  <a href="https://github.com/clitic/formatx">
     <img src="https://img.shields.io/github/repo-size/clitic/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx.rs">
-    <img src="https://img.shields.io/tokei/lines/github/clitic/formatx.rs?logo=github&style=flat-square">
+  <a href="https://github.com/clitic/formatx">
+    <img src="https://img.shields.io/tokei/lines/github/clitic/formatx?logo=github&style=flat-square">
   </a>
 </p>
 
