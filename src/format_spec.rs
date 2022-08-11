@@ -1,6 +1,5 @@
-use std::fmt::{Debug, Display};
-
 use crate::error::Error;
+use std::fmt::{Debug, Display};
 
 #[derive(Debug, Clone)]
 pub struct FormatSpec {
@@ -231,6 +230,59 @@ impl FormatSpec {
     }
 
     pub fn unsupported(&self) -> Result<(), Error> {
+        let align_index = match (
+            self.original.find("<"),
+            self.original.find("^"),
+            self.original.find(">"),
+        ) {
+            (None, None, None) => None,
+            (Some(left), None, None) => Some(left),
+            (None, Some(center), None) => Some(center),
+            (None, None, Some(right)) => Some(right),
+            _ => return Err(Error::new_parse("multiple align".to_owned())),
+        };
+
+        let sign_index = match (self.original.find("+"), self.original.find("-")) {
+            (None, None) => None,
+            (Some(positive), None) => Some(positive),
+            (None, Some(negative)) => Some(negative),
+            _ => return Err(Error::new_parse("multiple signs".to_owned())),
+        };
+
+        let hashtag_index = self.original.find("#");
+        let precision_index = self.original.find(".");
+
+        if let Some(x) = precision_index {
+            for (spec_name, spec_index) in [
+                ("align", align_index),
+                ("sign", sign_index),
+                ("hashtag", hashtag_index),
+            ]
+            .iter()
+            {
+                if let Some(spec_index) = spec_index {
+                    if *spec_index > x {
+                        return Err(Error::new_parse(format!(
+                            "precision used before {}",
+                            spec_name
+                        )));
+                    }
+                }
+            }
+
+            self.original
+                .get((x + 1)..(x + 2))
+                .unwrap()
+                .parse::<usize>()
+                .unwrap();
+        }
+
+        // self.original.get(self.original.find("#").unwrap() + 1..).unwrap_or("null").starts_with("0");
+        // width: Option<usize>,
+        // self.original.find("?");
+        // self.original.find("x?");
+        // self.original.find("X?");
+
         if self.original.contains("$") {
             return Err(Error::new_ufs(
                 "parameter setting through $ sign argument is not supported",
