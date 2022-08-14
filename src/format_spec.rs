@@ -1,9 +1,20 @@
 use crate::error::Error;
 use std::fmt::{Debug, Display};
 
-#[derive(Debug, Clone)]
+macro_rules! parse {
+    ($($arg:tt)*) => {
+        return Err($crate::error::Error::new_parse(format!($($arg)*)))
+    };
+}
+
+macro_rules! ufs {
+    ($($arg:tt)*) => {
+        return Err($crate::error::Error::new_ufs(format!($($arg)*)))
+    };
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct FormatSpec {
-    pub original: String,
     align: Option<(Option<String>, String)>,
     sign: Option<String>,
     hashtag: bool,
@@ -14,9 +25,224 @@ pub struct FormatSpec {
 }
 
 impl FormatSpec {
-    pub fn new(mut spec: String) -> Self {
-        let original = spec.clone();
+    pub fn new(placeholder: &str) -> Result<Self, Error> {
+        if placeholder.rfind(":").is_some() {
+            let spec = placeholder.split(":").last().unwrap().to_owned();
+            Self::validate(spec.clone(), placeholder)?;
+            return Ok(Self::parse(spec));
+        }
 
+        Ok(Self::default())
+    }
+
+    fn validate(mut spec: String, placeholder: &str) -> Result<(), Error> {
+        let mut align_index = match (spec.find("<"), spec.find("^"), spec.find(">")) {
+            (None, None, None) => None,
+            (Some(left), None, None) => Some(left),
+            (None, Some(center), None) => Some(center),
+            (None, None, Some(right)) => Some(right),
+            _ => parse!("multiple align specifiers used in {{{}}}", placeholder),
+        };
+
+        if let Some(x) = align_index {
+            if x == 1 {
+                spec.replace_range((x - 1)..x, "");
+                align_index = Some(0);
+            }
+        }
+
+        let sign_index = match (spec.find("+"), spec.find("-")) {
+            (None, None) => None,
+            (Some(positive), None) => Some(positive),
+            (None, Some(negative)) => Some(negative),
+            _ => parse!("multiple signs used in {{{}}}", placeholder),
+        };
+
+        let hashtag_index = spec.find("#");
+        let mut zero_index = spec.find("0");
+        let precision_index = spec.find(".");
+
+        if let Some(x) = zero_index {
+            if let Some(y) = precision_index {
+                if x > y {
+                    zero_index = None;
+                }
+            }
+        }
+
+        let question_index = spec.find("?");
+
+        if let Some(x) = align_index {
+            for (spec_name, spec_index) in [
+                ("sign", sign_index),
+                ("#", hashtag_index),
+                ("0", zero_index),
+                ("precision", precision_index),
+                ("?", question_index),
+            ]
+            .iter()
+            {
+                if let Some(spec_index) = spec_index {
+                    if x > *spec_index {
+                        parse!(
+                            "align should be used before {} in {{{}}}",
+                            spec_name,
+                            placeholder
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(x) = sign_index {
+            for (spec_name, spec_index) in [
+                ("#", hashtag_index),
+                ("0", zero_index),
+                ("precision", precision_index),
+                ("?", question_index),
+            ]
+            .iter()
+            {
+                if let Some(spec_index) = spec_index {
+                    if x > *spec_index {
+                        parse!(
+                            "sign should be used before {} in {{{}}}",
+                            spec_name,
+                            placeholder
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(x) = hashtag_index {
+            for (spec_name, spec_index) in [
+                ("0", zero_index),
+                ("precision", precision_index),
+                ("?", question_index),
+            ]
+            .iter()
+            {
+                if let Some(spec_index) = spec_index {
+                    if x > *spec_index {
+                        parse!(
+                            "# should be used before {} in {{{}}}",
+                            spec_name,
+                            placeholder
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(x) = zero_index {
+            for (spec_name, spec_index) in
+                [("precision", precision_index), ("?", question_index)].iter()
+            {
+                if let Some(spec_index) = spec_index {
+                    if x > *spec_index {
+                        parse!(
+                            "0 should be used before {} in {{{}}}",
+                            spec_name,
+                            placeholder
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(x) = precision_index {
+            for (spec_name, spec_index) in [("?", question_index)].iter() {
+                if let Some(spec_index) = spec_index {
+                    if x > *spec_index {
+                        parse!(
+                            "precision should be used before {} in {{{}}}",
+                            spec_name,
+                            placeholder
+                        );
+                    }
+                }
+            }
+
+            if spec
+                .get((x + 1)..(x + 2))
+                .unwrap()
+                .parse::<usize>()
+                .is_err()
+            {
+                parse!("precision value is not a valid usize");
+            }
+        }
+
+        // UNSUPPORTED FORMAT SPECS
+
+        if spec.contains("$") {
+            ufs!(
+                "parameter setting through $ sign argument is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains(".*") {
+            ufs!(
+                "asterisk .* formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("o") {
+            ufs!(
+                "o formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("x") {
+            ufs!(
+                "x formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("X") {
+            ufs!(
+                "X formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("p") {
+            ufs!(
+                "p formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("b") {
+            ufs!(
+                "b formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("e") {
+            ufs!(
+                "e formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        if spec.contains("E") {
+            ufs!(
+                "E formatting is not supported but used in {{{}}}",
+                placeholder
+            );
+        }
+
+        Ok(())
+    }
+
+    fn parse(mut spec: String) -> Self {
         let spec_copy = spec.clone();
         let align = if let Some(align) = spec_copy.get(0..1) {
             if align == "<" || align == "^" || align == ">" {
@@ -100,7 +326,6 @@ impl FormatSpec {
         };
 
         Self {
-            original,
             align,
             sign,
             hashtag,
@@ -227,100 +452,5 @@ impl FormatSpec {
         }
 
         fmtval
-    }
-
-    pub fn unsupported(&self) -> Result<(), Error> {
-        let align_index = match (
-            self.original.find("<"),
-            self.original.find("^"),
-            self.original.find(">"),
-        ) {
-            (None, None, None) => None,
-            (Some(left), None, None) => Some(left),
-            (None, Some(center), None) => Some(center),
-            (None, None, Some(right)) => Some(right),
-            _ => return Err(Error::new_parse("multiple align".to_owned())),
-        };
-
-        let sign_index = match (self.original.find("+"), self.original.find("-")) {
-            (None, None) => None,
-            (Some(positive), None) => Some(positive),
-            (None, Some(negative)) => Some(negative),
-            _ => return Err(Error::new_parse("multiple signs".to_owned())),
-        };
-
-        let hashtag_index = self.original.find("#");
-        let precision_index = self.original.find(".");
-
-        if let Some(x) = precision_index {
-            for (spec_name, spec_index) in [
-                ("align", align_index),
-                ("sign", sign_index),
-                ("hashtag", hashtag_index),
-            ]
-            .iter()
-            {
-                if let Some(spec_index) = spec_index {
-                    if *spec_index > x {
-                        return Err(Error::new_parse(format!(
-                            "precision used before {}",
-                            spec_name
-                        )));
-                    }
-                }
-            }
-
-            self.original
-                .get((x + 1)..(x + 2))
-                .unwrap()
-                .parse::<usize>()
-                .unwrap();
-        }
-
-        // self.original.get(self.original.find("#").unwrap() + 1..).unwrap_or("null").starts_with("0");
-        // width: Option<usize>,
-        // self.original.find("?");
-        // self.original.find("x?");
-        // self.original.find("X?");
-
-        if self.original.contains("$") {
-            return Err(Error::new_ufs(
-                "parameter setting through $ sign argument is not supported",
-            ));
-        }
-
-        if self.original.contains(".*") {
-            return Err(Error::new_ufs("asterisk .* formatting is not supported"));
-        }
-
-        if self.original.contains("o") {
-            return Err(Error::new_ufs("o formatting is not supported"));
-        }
-
-        if self.original.contains("x") {
-            return Err(Error::new_ufs("x formatting is not supported"));
-        }
-
-        if self.original.contains("X") {
-            return Err(Error::new_ufs("X formatting is not supported"));
-        }
-
-        if self.original.contains("p") {
-            return Err(Error::new_ufs("p formatting is not supported"));
-        }
-
-        if self.original.contains("b") {
-            return Err(Error::new_ufs("b formatting is not supported"));
-        }
-
-        if self.original.contains("e") {
-            return Err(Error::new_ufs("e formatting is not supported"));
-        }
-
-        if self.original.contains("E") {
-            return Err(Error::new_ufs("E formatting is not supported"));
-        }
-
-        Ok(())
     }
 }

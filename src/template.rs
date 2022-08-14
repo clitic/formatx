@@ -133,17 +133,15 @@ impl Template {
         let mut query_template = template_struct.template.clone();
 
         for name in template_struct.get_placeholders() {
-            let placeholder = Placeholder::new(&query_template, &name).unwrap();
-            query_template = query_template.replacen(&placeholder.replacer, "", 1);
+            let placeholder = Placeholder::new(&query_template, &name);
 
-            if let Err(err) = placeholder.format_spec.unsupported() {
-                return Err(Error::new_ufs(&format!(
-                    "{} but used in {}",
-                    err.message(),
-                    placeholder.replacer
-                )));
+            if let Err(e) = placeholder {
+                return Err(e);
             }
 
+            let placeholder = placeholder.unwrap().unwrap();
+            query_template = query_template.replacen(&placeholder.replacer, "", 1);
+            
             if let Some(children) = template_struct.placeholders.get_mut(&name) {
                 children.push(placeholder);
             } else {

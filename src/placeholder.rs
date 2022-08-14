@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::format_spec::FormatSpec;
 
 /// Template placeholder specifications.
@@ -10,7 +11,7 @@ pub struct Placeholder {
 
 impl Placeholder {
     /// Parse template string and deserialize it to `Self`.
-    pub fn new(template: &str, placeholder: &str) -> Option<Self> {
+    pub fn new(template: &str, placeholder: &str) -> Result<Option<Self>, Error> {
         if let Some(start) = template.find(&format!("{{{}", placeholder)) {
             let matched = &template[(start + 1)..(start + template[start..].find("}").unwrap())];
 
@@ -32,20 +33,14 @@ impl Placeholder {
                 Some(attributes)
             };
 
-            let format_specs = if matched.rfind(":").is_some() {
-                FormatSpec::new(matched.split(":").last().unwrap().to_owned())
-            } else {
-                FormatSpec::new("".to_owned())
-            };
-
-            return Some(Self {
+            return Ok(Some(Self {
                 attributes,
-                format_spec: format_specs,
+                format_spec: FormatSpec::new(matched)?,
                 replacer: format!("{{{}}}", matched),
-            });
+            }));
         }
 
-        None
+        Ok(None)
     }
 
     /// Get attribute value if present else returns `None`.

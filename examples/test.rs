@@ -10,4 +10,5 @@ fn main() {
     formatx_test!("Hello {:05}!", -5);
     formatx_test!("Hello {:+05}!", -5);
     formatx_test!("Hello {:+05}!", 5);
+    println!("{}", formatx!("{:09}", 1.0).unwrap());
 }

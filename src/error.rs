@@ -39,9 +39,9 @@ impl Error {
     }
 
     /// Create new unsupported format spec error.
-    pub fn new_ufs(message: &str) -> Self {
+    pub fn new_ufs(message: String) -> Self {
         Self {
-            message: message.to_owned(),
+            message: message,
             kind: ErrorKind::UnsupportedFormatSpec,
         }
     }
