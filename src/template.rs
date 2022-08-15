@@ -5,7 +5,7 @@ use std::str::FromStr;
 use crate::error::Error;
 use crate::placeholder::Placeholder;
 
-/// String templating with `std::fmt` syntax.
+/// String template with [std::fmt](std::fmt) syntax.
 ///
 /// # Example
 ///

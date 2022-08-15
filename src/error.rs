@@ -6,7 +6,7 @@ pub enum ErrorKind {
     UnsupportedFormatSpec,
 }
 
-/// Error struct which implements `std::error::Error`.
+/// Error struct which implements [Error](std::error::Error) trait.
 #[derive(Debug)]
 pub struct Error {
     message: String,
@@ -23,7 +23,7 @@ impl std::error::Error for Error {}
 
 impl Error {
     /// Create new parse error.
-    pub fn new_parse(message: String) -> Self {
+    pub(crate) fn new_parse(message: String) -> Self {
         Self {
             message: message,
             kind: ErrorKind::Parse,
@@ -31,7 +31,7 @@ impl Error {
     }
 
     /// Create new missing values error.
-    pub fn new_values(message: String) -> Self {
+    pub(crate) fn new_values(message: String) -> Self {
         Self {
             message: message,
             kind: ErrorKind::MissingValues,
@@ -39,7 +39,7 @@ impl Error {
     }
 
     /// Create new unsupported format spec error.
-    pub fn new_ufs(message: String) -> Self {
+    pub(crate) fn new_ufs(message: String) -> Self {
         Self {
             message: message,
             kind: ErrorKind::UnsupportedFormatSpec,

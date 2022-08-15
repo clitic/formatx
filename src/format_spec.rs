@@ -13,7 +13,7 @@ macro_rules! ufs {
     };
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct FormatSpec {
     align: Option<(Option<String>, String)>,
     sign: Option<String>,
@@ -25,7 +25,7 @@ pub struct FormatSpec {
 }
 
 impl FormatSpec {
-    pub fn new(placeholder: &str) -> Result<Self, Error> {
+    pub(crate) fn new(placeholder: &str) -> Result<Self, Error> {
         if placeholder.rfind(":").is_some() {
             let spec = placeholder.split(":").last().unwrap().to_owned();
             Self::validate(spec.clone(), placeholder)?;
@@ -76,7 +76,7 @@ impl FormatSpec {
             for (spec_name, spec_index) in [
                 ("sign", sign_index),
                 ("#", hashtag_index),
-                ("0", zero_index),
+                ("0 padding and width", zero_index),
                 ("precision", precision_index),
                 ("?", question_index),
             ]
@@ -97,7 +97,7 @@ impl FormatSpec {
         if let Some(x) = sign_index {
             for (spec_name, spec_index) in [
                 ("#", hashtag_index),
-                ("0", zero_index),
+                ("0 padding and width", zero_index),
                 ("precision", precision_index),
                 ("?", question_index),
             ]
@@ -117,7 +117,7 @@ impl FormatSpec {
 
         if let Some(x) = hashtag_index {
             for (spec_name, spec_index) in [
-                ("0", zero_index),
+                ("0 padding and width", zero_index),
                 ("precision", precision_index),
                 ("?", question_index),
             ]
@@ -164,13 +164,12 @@ impl FormatSpec {
                 }
             }
 
-            if spec
-                .get((x + 1)..(x + 2))
-                .unwrap()
-                .parse::<usize>()
-                .is_err()
-            {
-                parse!("precision value is not a valid usize");
+            if let Some(y) = spec.get((x + 1)..(x + 2)) {
+                if y.parse::<usize>().is_err() {
+                    parse!("precision value is not a valid usize in {{{}}}", placeholder);
+                }
+            } else {
+                parse!("precision value not supplied in {{{}}}", placeholder);
             }
         }
 
