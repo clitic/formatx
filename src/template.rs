@@ -159,17 +159,17 @@ impl Template {
         let mut placeholders = vec![];
         let mut template = self.template.clone();
 
-        while template.contains("{") && template.contains("}") {
-            match (template.find("{"), template.find("}")) {
+        while template.contains('{') && template.contains('}') {
+            match (template.find('{'), template.find('}')) {
                 (Some(start), Some(end)) => {
                     let placeholder = template[(start + 1)..end].to_owned();
                     template.replace_range(start..=end, "");
 
-                    if let Some(colon) = placeholder.find(":") {
+                    if let Some(colon) = placeholder.find(':') {
                         placeholders
-                            .push(placeholder[..colon].split(" ").nth(0).unwrap().to_owned());
+                            .push(placeholder[..colon].split(' ').next().unwrap().to_owned());
                     } else {
-                        placeholders.push(placeholder.split(" ").nth(0).unwrap().to_owned());
+                        placeholders.push(placeholder.split(' ').next().unwrap().to_owned());
                     }
                 }
                 _ => (),

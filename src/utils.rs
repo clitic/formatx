@@ -3,11 +3,7 @@ pub(crate) fn is_number(text: &str) -> bool {
         true
     } else if text.parse::<isize>().is_ok() {
         true
-    } else if text.parse::<f64>().is_ok() {
-        true
-    } else {
-        false
-    }
+    } else { text.parse::<f64>().is_ok() }
 }
 
 pub(crate) fn is_number_and_positive(text: &str) -> bool {

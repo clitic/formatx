@@ -26,8 +26,8 @@ pub struct FormatSpec {
 
 impl FormatSpec {
     pub(crate) fn new(placeholder: &str) -> Result<Self, Error> {
-        if placeholder.rfind(":").is_some() {
-            let spec = placeholder.split(":").last().unwrap().to_owned();
+        if placeholder.rfind(':').is_some() {
+            let spec = placeholder.split(':').last().unwrap().to_owned();
             Self::validate(spec.clone(), placeholder)?;
             return Ok(Self::parse(spec));
         }
@@ -36,7 +36,7 @@ impl FormatSpec {
     }
 
     fn validate(mut spec: String, placeholder: &str) -> Result<(), Error> {
-        let mut align_index = match (spec.find("<"), spec.find("^"), spec.find(">")) {
+        let mut align_index = match (spec.find('<'), spec.find('^'), spec.find('>')) {
             (None, None, None) => None,
             (Some(left), None, None) => Some(left),
             (None, Some(center), None) => Some(center),
@@ -51,16 +51,16 @@ impl FormatSpec {
             }
         }
 
-        let sign_index = match (spec.find("+"), spec.find("-")) {
+        let sign_index = match (spec.find('+'), spec.find('-')) {
             (None, None) => None,
             (Some(positive), None) => Some(positive),
             (None, Some(negative)) => Some(negative),
             _ => parse!("multiple signs used in {{{}}}", placeholder),
         };
 
-        let hashtag_index = spec.find("#");
-        let mut zero_index = spec.find("0");
-        let precision_index = spec.find(".");
+        let hashtag_index = spec.find('#');
+        let mut zero_index = spec.find('0');
+        let precision_index = spec.find('.');
 
         if let Some(x) = zero_index {
             if let Some(y) = precision_index {
@@ -70,7 +70,7 @@ impl FormatSpec {
             }
         }
 
-        let question_index = spec.find("?");
+        let question_index = spec.find('?');
 
         if let Some(x) = align_index {
             for (spec_name, spec_index) in [
@@ -175,7 +175,7 @@ impl FormatSpec {
 
         // UNSUPPORTED FORMAT SPECS
 
-        if spec.contains("$") {
+        if spec.contains('$') {
             ufs!(
                 "parameter setting through $ sign argument is not supported but used in {{{}}}",
                 placeholder
@@ -189,49 +189,49 @@ impl FormatSpec {
             );
         }
 
-        if spec.contains("o") {
+        if spec.contains('o') {
             ufs!(
                 "o formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("x") {
+        if spec.contains('x') {
             ufs!(
                 "x formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("X") {
+        if spec.contains('X') {
             ufs!(
                 "X formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("p") {
+        if spec.contains('p') {
             ufs!(
                 "p formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("b") {
+        if spec.contains('b') {
             ufs!(
                 "b formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("e") {
+        if spec.contains('e') {
             ufs!(
                 "e formatting is not supported but used in {{{}}}",
                 placeholder
             );
         }
 
-        if spec.contains("E") {
+        if spec.contains('E') {
             ufs!(
                 "E formatting is not supported but used in {{{}}}",
                 placeholder
@@ -318,10 +318,10 @@ impl FormatSpec {
             spec = spec.trim_start_matches(&format!(".{}", x)).to_owned();
         }
 
-        let types = if spec == "" {
+        let types = if spec.is_empty() {
             None
         } else {
-            Some(spec.split(" ").nth(0).unwrap().to_owned())
+            Some(spec.split(' ').next().unwrap().to_owned())
         };
 
         Self {
@@ -357,22 +357,18 @@ impl FormatSpec {
                 } else if types == "X?" {
                     return format!("{:#X?}", value);
                 }
-            } else {
-                if types == "?" {
-                    return format!("{:?}", value);
-                } else if types == "x?" {
-                    return format!("{:x?}", value);
-                } else if types == "X?" {
-                    return format!("{:X?}", value);
-                }
+            } else if types == "?" {
+                return format!("{:?}", value);
+            } else if types == "x?" {
+                return format!("{:x?}", value);
+            } else if types == "X?" {
+                return format!("{:X?}", value);
             }
         }
 
         if let Some(sign) = &self.sign {
-            if sign == "+" && !self.zero {
-                if crate::utils::is_number_and_positive(&fmtval) {
-                    fmtval = "+".to_owned() + &fmtval;
-                }
+            if sign == "+" && !self.zero && crate::utils::is_number_and_positive(&fmtval) {
+                fmtval = "+".to_owned() + &fmtval;
             }
         }
 
@@ -426,27 +422,23 @@ impl FormatSpec {
                             fmtval =
                                 "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
                         }
+                    } else if fmtval.starts_with('-') {
+                        fmtval =
+                            "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
                     } else {
-                        if fmtval.starts_with("-") {
-                            fmtval =
-                                "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
-                        } else {
-                            fmtval = "0".repeat(width - chars_count) + &fmtval;
-                        }
+                        fmtval = "0".repeat(width - chars_count) + &fmtval;
                     }
                 } else if width > chars_count {
                     fmtval = " ".repeat(width - chars_count) + &fmtval;
                 }
+            } else if self.zero && self.hashtag {
+                fmtval = format!("{:#01$}", fmtval, width);
+            } else if self.zero {
+                fmtval = format!("{:01$}", fmtval, width);
+            } else if self.hashtag {
+                fmtval = format!("{:#1$}", fmtval, width);
             } else {
-                if self.zero && self.hashtag {
-                    fmtval = format!("{:#01$}", fmtval, width);
-                } else if self.zero {
-                    fmtval = format!("{:01$}", fmtval, width);
-                } else if self.hashtag {
-                    fmtval = format!("{:#1$}", fmtval, width);
-                } else {
-                    fmtval = format!("{:1$}", fmtval, width);
-                }
+                fmtval = format!("{:1$}", fmtval, width);
             }
         }
 

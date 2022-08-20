@@ -25,7 +25,7 @@ impl Error {
     /// Create new parse error.
     pub(crate) fn new_parse(message: String) -> Self {
         Self {
-            message: message,
+            message,
             kind: ErrorKind::Parse,
         }
     }
@@ -33,7 +33,7 @@ impl Error {
     /// Create new missing values error.
     pub(crate) fn new_values(message: String) -> Self {
         Self {
-            message: message,
+            message,
             kind: ErrorKind::MissingValues,
         }
     }
@@ -41,7 +41,7 @@ impl Error {
     /// Create new unsupported format spec error.
     pub(crate) fn new_ufs(message: String) -> Self {
         Self {
-            message: message,
+            message,
             kind: ErrorKind::UnsupportedFormatSpec,
         }
     }

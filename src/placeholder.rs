@@ -13,10 +13,10 @@ impl Placeholder {
     /// Parse template string and deserialize it to `Self`.
     pub fn new(template: &str, placeholder: &str) -> Result<Option<Self>, Error> {
         if let Some(start) = template.find(&format!("{{{}", placeholder)) {
-            let matched = &template[(start + 1)..(start + template[start..].find("}").unwrap())];
+            let matched = &template[(start + 1)..(start + template[start..].find('}').unwrap())];
 
-            let attributes = if matched.rfind(":").is_some() {
-                let mut attributes = matched.split(":").collect::<Vec<&str>>();
+            let attributes = if matched.rfind(':').is_some() {
+                let mut attributes = matched.split(':').collect::<Vec<&str>>();
                 let _ = attributes.pop();
                 attributes
                     .join(":")
@@ -27,7 +27,7 @@ impl Placeholder {
                 matched.trim_start_matches(placeholder).trim().to_owned()
             };
 
-            let attributes = if attributes == "" {
+            let attributes = if attributes.is_empty() {
                 None
             } else {
                 Some(attributes)
@@ -59,12 +59,12 @@ impl Placeholder {
             if let Some(attribute_index) = attributes.find(&attribute_identifier) {
                 let value = attributes[attribute_index..].trim_start_matches(&attribute_identifier);
 
-                if value.starts_with("\"") {
-                    return Some(value[1..(value[1..].find("\"").unwrap() + 1)].to_owned());
-                } else if value.starts_with("'") {
-                    return Some(value[1..(value[1..].find("'").unwrap() + 1)].to_owned());
+                if value.starts_with('\"') {
+                    return Some(value[1..(value[1..].find('\"').unwrap() + 1)].to_owned());
+                } else if value.starts_with('\'') {
+                    return Some(value[1..(value[1..].find('\'').unwrap() + 1)].to_owned());
                 } else {
-                    return value.split(" ").nth(0).map(|x| x.to_owned());
+                    return value.split(' ').next().map(|x| x.to_owned());
                 }
             }
         }
