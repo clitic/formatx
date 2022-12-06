@@ -19,7 +19,7 @@
 /// `formatx!` panics if a formatting trait implementation returns an error.
 /// This indicates an incorrect implementation
 /// since `fmt::Write for String` never returns an error itself.
-/// Additonally `formatx!` returns a `Result` type which can be resolved later.
+/// Additonally `formatx!` returns a `Result<String, formatx::Error>` type which can be resolved later.
 ///
 /// # Examples
 ///
@@ -28,32 +28,30 @@
 /// ```
 /// use formatx::formatx;
 ///
-/// formatx!("test").unwrap().text().unwrap();
+/// formatx!("test").unwrap();
 /// formatx!("hello {}", "world!").unwrap();
 /// formatx!("x = {}, y = {y}", 10, y = 30).unwrap();
 /// ```
 #[macro_export]
 macro_rules! formatx {
     ($template: expr) => {
-        $crate::Template::new($template)
+        || -> Result<String, $crate::Error> {
+            Ok($crate::Template::new($template)?.text()?)
+        }()
     };
 
-    ($template: expr, $($values: tt)*) => {{
-        let template = $crate::Template::new($template);
-
-        if let Err(err) = template {
-            Err(err)
-        } else {
-            let mut template = template.unwrap();
-            $crate::formatx_internal!(template, $($values)*);
-            template.text()
-        }
-    }};
+    ($template: expr, $($values: tt)*) => {
+        || -> Result<String, $crate::Error> {
+            let mut template = $crate::Template::new($template)?;
+            $crate::_formatx_internal!(template, $($values)*);
+            Ok(template.text()?)
+        }()
+    };
 }
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! formatx_internal {
+macro_rules! _formatx_internal {
     ($template: expr, $name: ident = $value: expr) => {
         $template.replace(stringify!($name), $value);
     };
@@ -64,12 +62,12 @@ macro_rules! formatx_internal {
 
     ($template: expr, $name: ident = $value: expr, $($values: tt)*) => {
         $template.replace(stringify!($name), $value);
-        $crate::formatx_internal!($template, $($values)*);
+        $crate::_formatx_internal!($template, $($values)*);
     };
 
     ($template: expr, $value:expr, $($values: tt)*) => {
     	$template.replace_positional($value);
-        $crate::formatx_internal!($template, $($values)*);
+        $crate::_formatx_internal!($template, $($values)*);
     };
 }
 
@@ -85,7 +83,7 @@ mod tests {
 
     #[test]
     fn text() {
-        assert_eq!(formatx!("Hello").unwrap().text().unwrap(), format!("Hello"));
+        assert_eq!(formatx!("Hello").unwrap(), format!("Hello"));
     }
 
     #[test]
@@ -140,11 +138,11 @@ mod tests {
     #[test]
     fn escaping() {
         assert_eq!(
-            formatx!("Hello {{}}").unwrap().text().unwrap(),
+            formatx!("Hello {{}}").unwrap(),
             format!("Hello {{}}")
         );
         assert_eq!(
-            formatx!("{{ Hello").unwrap().text().unwrap(),
+            formatx!("{{ Hello").unwrap(),
             format!("{{ Hello")
         );
     }

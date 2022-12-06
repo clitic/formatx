@@ -34,7 +34,7 @@ Add this to your Cargo.toml file.
 
 ```toml
 [dependencies]
-formatx = "0.1.4"
+formatx = "0.2.0"
 ```
 
 Or add from command line.
@@ -87,7 +87,7 @@ Hi Ashley, the number is 3
 
 ```rust
 let people = "Rustaceans";
-formatx!("Hello {people}!").unwrap().text().unwrap();
+formatx!("Hello {people}!").unwrap();
 ```
 
 3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported. 

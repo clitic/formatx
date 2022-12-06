@@ -1,9 +1,9 @@
 [package]
 name = "formatx"
-version = "0.1.4"
-description = "A macro for formatting non literal strings at runtime in Rust"
+version = "0.2.0"
+description = "A macro for formatting non literal strings at runtime"
 authors = ["clitic <clitic21@gmail.com>"]
-repository = "https://github.com/clitic/formatx.rs"
+repository = "https://github.com/clitic/formatx"
 documentation = "https://docs.rs/formatx"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
