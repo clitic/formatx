@@ -26,7 +26,7 @@
 
 <p align="center">A macro for formatting non literal strings at runtime in Rust.</p>
 
-This library aims for formatting **strings** and **numbers** rather than an generic type. Syntax for the format string is derived from [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax).
+`formatx` is a dependency free string templating library with syntax derived from [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax). formatx exports [formatx!](https://docs.rs/formatx/latest/formatx/macro.formatx.html) macro which is similar to [format!](https://doc.rust-lang.org/std/macro.format.html). formatx works by first parsing the template string and then it uses `format!` macro internally to replicate it's behaviour. formatx aims for formatting strings and numbers although an generic type can also be formatted like an [struct](https://github.com/clitic/formatx/blob/main/examples/struct.rs).
 
 ## Getting Started
 
@@ -40,7 +40,7 @@ formatx = "0.1"
 Or add from command line.
 
 ```bash
-$ cargo add formatx@0.1
+$ cargo add formatx
 ```
 
 See [docs](https://docs.rs/formatx/latest/formatx) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
