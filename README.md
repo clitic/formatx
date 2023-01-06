@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/crates/v/formatx?style=flat-square">
   </a>
   <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/workflow/status/clitic/formatx/Rust?logo=github&style=flat-square">
+    <img src="https://img.shields.io/github/actions/workflow/status/clitic/formatx/rust.yml?logo=github&style=flat-square">
   </a>
   <a href="https://docs.rs/formatx/latest/formatx">
     <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
