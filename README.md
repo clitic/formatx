@@ -79,7 +79,8 @@ Hi Ashley, the number is 3
 
 ## Limitations
 
-> **Warning: Examples given below will always panic.**
+> **Warning**
+> Examples given below will always panic.
 
 1. Only types which implements [Display](https://doc.rust-lang.org/std/fmt/trait.Display.html) + [Debug](https://doc.rust-lang.org/std/fmt/trait.Debug.html) traits are supported. Other [formatting-traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) aren't supported.
 
