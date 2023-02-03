@@ -134,14 +134,9 @@ impl Template {
 
         for name in template_struct.get_placeholders() {
             let placeholder = Placeholder::new(&query_template, &name);
-
-            if let Err(e) = placeholder {
-                return Err(e);
-            }
-
-            let placeholder = placeholder.unwrap().unwrap();
+            let placeholder = placeholder?.unwrap();
             query_template = query_template.replacen(&placeholder.replacer, "", 1);
-            
+
             if let Some(children) = template_struct.placeholders.get_mut(&name) {
                 children.push(placeholder);
             } else {
@@ -160,19 +155,15 @@ impl Template {
         let mut template = self.template.clone();
 
         while template.contains('{') && template.contains('}') {
-            match (template.find('{'), template.find('}')) {
-                (Some(start), Some(end)) => {
-                    let placeholder = template[(start + 1)..end].to_owned();
-                    template.replace_range(start..=end, "");
+            if let (Some(start), Some(end)) = (template.find('{'), template.find('}')) {
+                let placeholder = template[(start + 1)..end].to_owned();
+                template.replace_range(start..=end, "");
 
-                    if let Some(colon) = placeholder.find(':') {
-                        placeholders
-                            .push(placeholder[..colon].split(' ').next().unwrap().to_owned());
-                    } else {
-                        placeholders.push(placeholder.split(' ').next().unwrap().to_owned());
-                    }
+                if let Some(colon) = placeholder.find(':') {
+                    placeholders.push(placeholder[..colon].split(' ').next().unwrap().to_owned());
+                } else {
+                    placeholders.push(placeholder.split(' ').next().unwrap().to_owned());
                 }
-                _ => (),
             }
         }
 

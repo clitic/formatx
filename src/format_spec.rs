@@ -382,7 +382,7 @@ impl FormatSpec {
                     if align == "<" {
                         fmtval = fmtval + &fill.repeat(width - chars_count);
                     } else if align == "^" {
-                        let factor = if chars_count % 2 == 0 { 0 } else { 1 };
+                        let factor = usize::from(chars_count % 2 != 0);
                         let start = fill.repeat((width - chars_count - factor) / 2);
                         let end = fill.repeat((width - chars_count + factor) / 2);
                         fmtval = start + &fmtval + &end;

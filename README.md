@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/crates/v/formatx?style=flat-square">
   </a>
   <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/actions/workflow/status/clitic/formatx/rust.yml?logo=github&style=flat-square">
+    <img src="https://img.shields.io/github/actions/workflow/status/clitic/formatx/ci.yml?logo=github&style=flat-square">
   </a>
   <a href="https://docs.rs/formatx/latest/formatx">
     <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
@@ -34,7 +34,7 @@ Add this to your Cargo.toml file.
 
 ```toml
 [dependencies]
-formatx = "0.2.0"
+formatx = "0.2.1"
 ```
 
 Or add from command line.
@@ -79,7 +79,7 @@ Hi Ashley, the number is 3
 
 ## Limitations
 
-> **Examples given below will always panic.**
+> **Warning: Examples given below will always panic.**
 
 1. Only types which implements [Display](https://doc.rust-lang.org/std/fmt/trait.Display.html) + [Debug](https://doc.rust-lang.org/std/fmt/trait.Debug.html) traits are supported. Other [formatting-traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) aren't supported.
 

@@ -1,7 +1,9 @@
 use formatx::Template;
 
 fn main() {
-    let mut template = Template::new("{percentage color=true:.2} => {percentage color=false:.0}%").unwrap();
+    let mut template = "{percentage color=true:.2} => {percentage color=false:.0}%"
+        .parse::<Template>()
+        .unwrap();
 
     template.replace_with_callback("percentage", 99.9999, |fmtval, placeholder| {
         if let Some(color) = placeholder.attr("color") {

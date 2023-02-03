@@ -59,10 +59,10 @@ impl Placeholder {
             if let Some(attribute_index) = attributes.find(&attribute_identifier) {
                 let value = attributes[attribute_index..].trim_start_matches(&attribute_identifier);
 
-                if value.starts_with('\"') {
-                    return Some(value[1..(value[1..].find('\"').unwrap() + 1)].to_owned());
-                } else if value.starts_with('\'') {
-                    return Some(value[1..(value[1..].find('\'').unwrap() + 1)].to_owned());
+                if let Some(stripped) = value.strip_prefix('\"') {
+                    return Some(value[1..(stripped.find('\"')? + 1)].to_owned());
+                } else if let Some(stripped) = value.strip_prefix('\'') {
+                    return Some(value[1..(stripped.find('\'')? + 1)].to_owned());
                 } else {
                     return value.split(' ').next().map(|x| x.to_owned());
                 }

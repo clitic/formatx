@@ -13,14 +13,9 @@ impl Display for Foo {
 }
 
 fn main() {
-    println!(
-        "{}",
-        formatx!(
-            "{:#?}",
-            Foo {
-                _bar: "foo-bar-struct".to_owned()
-            }
-        )
-        .unwrap()
-    );
+    let foo = Foo {
+        _bar: "foo-bar-struct".to_owned(),
+    };
+
+    println!("{}", formatx!("{:#?}", foo).unwrap());
 }

@@ -1,9 +1,5 @@
 pub(crate) fn is_number(text: &str) -> bool {
-    if text.parse::<usize>().is_ok() {
-        true
-    } else if text.parse::<isize>().is_ok() {
-        true
-    } else { text.parse::<f64>().is_ok() }
+    text.parse::<usize>().is_ok() || text.parse::<isize>().is_ok() || text.parse::<f64>().is_ok()
 }
 
 pub(crate) fn is_number_and_positive(text: &str) -> bool {
@@ -22,17 +18,13 @@ pub(crate) fn usize_token(spec: &str, match_index: usize) -> Option<usize> {
     let mut token = None;
     let mut token_index = match_index + 1;
 
-    loop {
-        if let Ok(token_suffixed) = spec
-            .get(match_index..token_index)
-            .unwrap_or("null")
-            .parse::<usize>()
-        {
-            token = Some(token_suffixed);
-            token_index += 1;
-        } else {
-            break;
-        }
+    while let Ok(token_suffixed) = spec
+        .get(match_index..token_index)
+        .unwrap_or("null")
+        .parse::<usize>()
+    {
+        token = Some(token_suffixed);
+        token_index += 1;
     }
 
     token
