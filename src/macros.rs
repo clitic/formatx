@@ -44,7 +44,7 @@ macro_rules! formatx {
         || -> Result<String, $crate::Error> {
             let mut template = $crate::Template::new($template)?;
             $crate::_formatx_internal!(template, $($values)*);
-            Ok(template.text()?)
+            template.text()
         }()
     };
 }
