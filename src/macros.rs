@@ -35,13 +35,13 @@
 #[macro_export]
 macro_rules! formatx {
     ($template: expr) => {
-        || -> Result<String, $crate::Error> {
+        || -> std::result::Result<String, $crate::Error> {
             Ok($crate::Template::new($template)?.text()?)
         }()
     };
 
     ($template: expr, $($values: tt)*) => {
-        || -> Result<String, $crate::Error> {
+        || -> std::result::Result<String, $crate::Error> {
             let mut template = $crate::Template::new($template)?;
             $crate::_formatx_internal!(template, $($values)*);
             template.text()
