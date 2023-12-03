@@ -35,13 +35,13 @@
 #[macro_export]
 macro_rules! formatx {
     ($template: expr) => {
-        || -> std::result::Result<String, $crate::Error> {
+        || -> ::std::result::Result<String, $crate::Error> {
             Ok($crate::Template::new($template)?.text()?)
         }()
     };
 
     ($template: expr, $($values: tt)*) => {
-        || -> std::result::Result<String, $crate::Error> {
+        || -> ::std::result::Result<String, $crate::Error> {
             let mut template = $crate::Template::new($template)?;
             $crate::_formatx_internal!(template, $($values)*);
             template.text()
@@ -137,14 +137,8 @@ mod tests {
 
     #[test]
     fn escaping() {
-        assert_eq!(
-            formatx!("Hello {{}}").unwrap(),
-            format!("Hello {{}}")
-        );
-        assert_eq!(
-            formatx!("{{ Hello").unwrap(),
-            format!("{{ Hello")
-        );
+        assert_eq!(formatx!("Hello {{}}").unwrap(), format!("Hello {{}}"));
+        assert_eq!(formatx!("{{ Hello").unwrap(), format!("{{ Hello"));
     }
 
     #[test]

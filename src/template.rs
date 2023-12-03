@@ -192,7 +192,6 @@ impl Template {
                 "missing placeholders values for: {}",
                 self.placeholders
                     .keys()
-                    .into_iter()
                     .map(|x| {
                         if x.parse::<usize>().is_ok() {
                             format!("{} (positional)", x)

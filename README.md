@@ -19,9 +19,6 @@
   <a href="https://github.com/clitic/formatx">
     <img src="https://img.shields.io/github/repo-size/clitic/formatx?style=flat-square">
   </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/tokei/lines/github/clitic/formatx?logo=github&style=flat-square">
-  </a>
 </p>
 
 <p align="center">A macro for formatting non literal strings at runtime in Rust.</p>
@@ -34,7 +31,7 @@ Add this to your Cargo.toml file.
 
 ```toml
 [dependencies]
-formatx = "0.2.1"
+formatx = "0.2.2"
 ```
 
 Or add from command line.

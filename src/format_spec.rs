@@ -166,7 +166,10 @@ impl FormatSpec {
 
             if let Some(y) = spec.get((x + 1)..(x + 2)) {
                 if y.parse::<usize>().is_err() {
-                    parse!("precision value is not a valid usize in {{{}}}", placeholder);
+                    parse!(
+                        "precision value is not a valid usize in {{{}}}",
+                        placeholder
+                    );
                 }
             } else {
                 parse!("precision value not supplied in {{{}}}", placeholder);
@@ -423,8 +426,7 @@ impl FormatSpec {
                                 "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
                         }
                     } else if fmtval.starts_with('-') {
-                        fmtval =
-                            "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
+                        fmtval = "-".to_owned() + &"0".repeat(width - chars_count) + &fmtval[1..];
                     } else {
                         fmtval = "0".repeat(width - chars_count) + &fmtval;
                     }
