@@ -221,7 +221,7 @@ impl Template {
     where
         T: Display + Debug,
     {
-        self.replace_with_callback(&self.position.to_string(), value, |formatted_value, _| {
+        self.replace_with_callback(self.position.to_string(), value, |formatted_value, _| {
             formatted_value
         });
         self.position += 1;
