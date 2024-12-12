@@ -36,7 +36,7 @@
 macro_rules! formatx {
     ($template: expr) => {
         || -> ::std::result::Result<String, $crate::Error> {
-            Ok($crate::Template::new($template)?.text()?)
+            $crate::Template::new($template)?.text()
         }()
     };
 
