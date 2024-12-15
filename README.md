@@ -31,7 +31,7 @@ Add this to your Cargo.toml file.
 
 ```toml
 [dependencies]
-formatx = "0.2.2"
+formatx = "0.2.3"
 ```
 
 Or add from command line.
