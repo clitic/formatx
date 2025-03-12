@@ -88,7 +88,7 @@ let people = "Rustaceans";
 formatx!("Hello {people}!").unwrap();
 ```
 
-3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported. 
+3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported. Also positional arguments are handled by an internal key which increments itself whenever an postional argument is passed. So, the behaviour is very different when compared yo `format` macro. See issue [#7](https://github.com/clitic/formatx/issues/7) for more info.
 
 ```rust
 formatx!("{1} {} {0} {}", 1, 2).unwrap();
