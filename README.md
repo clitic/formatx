@@ -106,6 +106,10 @@ formatx!("{:width$}!", "x", width = 5).unwrap();
 formatx!("{:.*}", 5, 0.01).unwrap();
 ```
 
+## Handling Of Unused Arguments
+
+Unlike Rust's built-in `format!` macro, which reports an error if any provided arguments are not used in the format string, `formatx!` allows unused arguments. This can be particularly useful in localization scenarios, where translations may or may not require certain arguments depending on grammatical rules (e.g., plural handling in GNU gettext).
+
 ## Alternatives
 
 1. [strfmt](https://github.com/vitiral/strfmt)
