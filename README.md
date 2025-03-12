@@ -74,6 +74,10 @@ Hola Sofia, el numero es 2
 Hi Ashley, the number is 3
 ```
 
+## Syntax
+
+The main goal of `formatx` is to provide a almost identical syntax as of rust's format syntax. The syntax of `formatx` is identical to [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax). You can also see gettext [documentation](https://www.gnu.org/software/gettext/manual/html_node/rust_002dformat.html), the rust's format syntax specifications is mentioned there too.
+
 ## Limitations
 
 > **Warning**
@@ -88,7 +92,7 @@ let people = "Rustaceans";
 formatx!("Hello {people}!").unwrap();
 ```
 
-3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported. Also positional arguments are handled by an internal key which increments itself whenever an postional argument is passed. So, the behaviour is very different when compared yo `format` macro. See issue [#7](https://github.com/clitic/formatx/issues/7) for more info.
+3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported.
 
 ```rust
 formatx!("{1} {} {0} {}", 1, 2).unwrap();
@@ -106,9 +110,24 @@ formatx!("{:width$}!", "x", width = 5).unwrap();
 formatx!("{:.*}", 5, 0.01).unwrap();
 ```
 
+## Handling Of Positional Arguments
+
+Positional arguments are handled by an internal key which increments itself whenever an postional argument is passed through the macro. So, the behaviour is very different when compared to `format` macro.
+
+By default this internal key is set to `0` and when an positional argument is passed. `formatx` resolves the replacement by first checking if there is `0` key present in format string (eg. `Hello {0}`) or not, if the `0` is present then it replaces it, else if the `0` key is not present in the format string (eg.`Hello {}`) it replaces the first blank placeholder. After a replacement is made this internal key is increased by `1`.
+
+```rust
+asserteq!(
+  format!("{} {2} {} {1} {4} {} {3} {5} {6}", "zero", "one", "two", "three", "four", "five", "six"),
+  formatx!("{} {2} {} {1} {4} {} {3} {5} {6}", "zero", "one", "two", "three", "four", "five", "six", "seven", "eight").unwrap() // This line won't panic
+); // This line will panic
+```
+
+An error cannot be raised in such cases because `formatx` works at runtime and it doesn't know the future upcoming postitional arguments. So while designing your app keep this point in mind or simply use key value arguments. See issue [#7](https://github.com/clitic/formatx/issues/7) for more info.
+
 ## Handling Of Unused Arguments
 
-Unlike Rust's built-in `format!` macro, which reports an error if any provided arguments are not used in the format string, `formatx!` allows unused arguments. This can be particularly useful in localization scenarios, where translations may or may not require certain arguments depending on grammatical rules (e.g., plural handling in GNU gettext).
+Unlike rust's built-in `format!` macro, which reports an error if any provided arguments are not used in the format string, `formatx!` allows unused arguments. This can be particularly useful in localization scenarios, where translations may or may not require certain arguments depending on grammatical rules.
 
 ## Alternatives
 
