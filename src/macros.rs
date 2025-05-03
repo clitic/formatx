@@ -34,7 +34,7 @@
 /// ```
 #[macro_export]
 macro_rules! formatx {
-    ($template: expr) => {
+    ($template: expr $(,)?) => {
         || -> ::std::result::Result<String, $crate::Error> {
             $crate::Template::new($template)?.text()
         }()
@@ -52,11 +52,11 @@ macro_rules! formatx {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! _formatx_internal {
-    ($template: expr, $name: ident = $value: expr) => {
+    ($template: expr, $name: ident = $value: expr $(,)?) => {
         $template.replace(stringify!($name), $value);
     };
 
-    ($template: expr, $value: expr) => (
+    ($template: expr, $value: expr $(,)?) => (
         $template.replace_positional($value);
     );
 
@@ -146,5 +146,25 @@ mod tests {
         formatx_test!("{} {:?}", 3, 4);
         formatx_test!("{} {:?}", 'a', 'b');
         formatx_test!("{} {:?}", "foo\n", "bar\n");
+    }
+
+    #[test]
+    fn trailing_commas() {
+        formatx_test!(
+            "Hello",
+        );
+        formatx_test!(
+            "Hello {}",
+            "world",
+        );
+        formatx_test!(
+            "Hello {1} {0}",
+            "1",
+            "0",
+        );
+        formatx_test!(
+            "Hello {name}",
+            name = "John",
+        );
     }
 }
