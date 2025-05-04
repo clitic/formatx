@@ -7,17 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2024-05-04
+
+### Fixed
+
+- Suppport for trailing commas when calling `formatx!` macro. ([#11](https://github.com/clitic/formatx/pull/11))
+
 ## [0.2.3] - 2024-12-15
 
 ### Fixed
 
-- clippy warnings. (#6)
+- clippy warnings. ([#6](https://github.com/clitic/formatx/pull/6))
 
 ## [0.2.2] - 2023-12-03
 
 ### Fixed
 
-- Use `std::result::Result` in `formatx!` macro. (#4)
+- Use `std::result::Result` in `formatx!` macro. ([#4](https://github.com/clitic/formatx/pull/4))
 
 ## [0.2.1] - 2023-02-03
 
@@ -45,7 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2022-08-03
 
-[Unreleased]: https://github.com/clitic/formatx/compare/0.2.3...HEAD
+[Unreleased]: https://github.com/clitic/formatx/compare/0.2.4...HEAD
+[0.2.4]: https://github.com/clitic/formatx/compare/v0.2.3...0.2.4
 [0.2.3]: https://github.com/clitic/formatx/compare/v0.2.2...0.2.3
 [0.2.2]: https://github.com/clitic/formatx/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/clitic/formatx/compare/v0.2.0...v0.2.1

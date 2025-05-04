@@ -150,21 +150,9 @@ mod tests {
 
     #[test]
     fn trailing_commas() {
-        formatx_test!(
-            "Hello",
-        );
-        formatx_test!(
-            "Hello {}",
-            "world",
-        );
-        formatx_test!(
-            "Hello {1} {0}",
-            "1",
-            "0",
-        );
-        formatx_test!(
-            "Hello {name}",
-            name = "John",
-        );
+        formatx_test!("Hello",);
+        formatx_test!("Hello {}", "world",);
+        formatx_test!("Hello {1} {0}", "1", "0",);
+        formatx_test!("Hello {name}", name = "John",);
     }
 }
