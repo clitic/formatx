@@ -129,6 +129,10 @@ An error cannot be raised in such cases because `formatx` works at runtime and i
 
 Unlike rust's built-in `format!` macro, which reports an error if any provided arguments are not used in the format string, `formatx!` allows unused arguments. This can be particularly useful in localization scenarios, where translations may or may not require certain arguments depending on grammatical rules.
 
+# Packaging Status
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rust%3Aformatx.svg)](https://repology.org/project/rust%3Aformatx/versions)
+
 ## Alternatives
 
 1. [strfmt](https://github.com/vitiral/strfmt)
