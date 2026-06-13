@@ -1,11 +1,7 @@
 //! The [`Renderer`] builder -collects arguments and produces formatted output.
 
+use crate::{error::Error, format, template::Template, value::FormatValue};
 use std::fmt::{Debug, Display};
-
-use crate::error::Error;
-use crate::format;
-use crate::template::Template;
-use crate::value::FormatValue;
 
 /// A builder for rendering a [`Template`] with arguments.
 ///

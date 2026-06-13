@@ -5,11 +5,8 @@
 //! - **Full path**: delegates sign/alternate/precision/width to `std::fmt` via `write!`,
 //!   then handles fill+align manually when custom fill is specified.
 
+use crate::{ast::*, error::Error, value::FormatValue};
 use std::fmt::{Debug, Write};
-
-use crate::ast::*;
-use crate::error::Error;
-use crate::value::FormatValue;
 
 // --- Internal macros (must come before functions that use them) ---
 

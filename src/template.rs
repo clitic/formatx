@@ -1,12 +1,12 @@
 //! The [`Template`] struct -parse once, inspect, render many times.
 
-use std::fmt;
-use std::str::FromStr;
-
-use crate::ast::{Argument, FormatString, Segment, Span};
-use crate::error::Error;
-use crate::parser;
-use crate::renderer::Renderer;
+use crate::{
+    ast::{Argument, FormatString, Segment, Span},
+    error::Error,
+    parser,
+    renderer::Renderer,
+};
+use std::{fmt, str::FromStr};
 
 /// An owned, parsed format string that can be rendered many times with different arguments.
 ///

@@ -2,8 +2,7 @@
 //!
 //! Produces a [`FormatString`] AST from a `&str` source.
 
-use crate::ast::*;
-use crate::error::Error;
+use crate::{ast::*, error::Error};
 
 /// Parse a format string into a [`FormatString`] AST.
 ///
