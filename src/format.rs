@@ -1,4 +1,4 @@
-//! Format engine -applies [`FormatSpec`] to produce formatted output.
+//! Format engine - applies [`FormatSpec`] to produce formatted output.
 //!
 //! Two paths:
 //! - **Fast path**: plain `{}` or `{:?}` -`write!` directly to output.
@@ -7,8 +7,6 @@
 
 use crate::{ast::*, error::Error, value::FormatValue};
 use std::fmt::{Debug, Write};
-
-// --- Internal macros (must come before functions that use them) ---
 
 // Display with all options including width and zero-pad
 macro_rules! fmt_display_full {
@@ -105,7 +103,7 @@ macro_rules! fmt_debug_full {
     };
 }
 
-// Display core (no width -for manual padding path)
+// Display core (no width - for manual padding path)
 macro_rules! fmt_display_core {
     ($buf:expr, $arg:expr, $sign:expr, $alt:expr, $prec:expr) => {
         match ($sign, $alt, $prec) {
@@ -135,8 +133,6 @@ macro_rules! fmt_debug_core {
         }
     };
 }
-
-// --- Public API ---
 
 /// Render a parsed [`FormatString`] into `output` using the provided arguments.
 pub fn render(
@@ -209,7 +205,7 @@ pub fn render(
                     continue;
                 }
 
-                // If custom fill or align is specified → manual padding
+                // If custom fill or align is specified -> manual padding
                 if placeholder.spec.fill.is_some() || placeholder.spec.align.is_some() {
                     let mut buf = String::new();
                     format_core(&mut buf, arg, &placeholder.spec, resolved_precision)?;
@@ -231,7 +227,7 @@ pub fn render(
     Ok(())
 }
 
-// --- Argument/count resolution ---
+// Argument/count resolution
 
 fn resolve_argument(
     argument: &Argument,
@@ -360,8 +356,7 @@ fn format_debug_fast(
     Ok(())
 }
 
-// --- format_full: let std::fmt handle width natively ---
-
+/// let std::fmt handle width natively
 fn format_full(
     output: &mut String,
     arg: &dyn FormatValue,
@@ -398,7 +393,7 @@ fn format_full(
         }
         FormatType::DebugLowerHex => {
             let dbg: &dyn Debug = arg;
-            write!(output, "{:x?}", dbg)?; // simplified -width with x?/X? is rare
+            write!(output, "{:x?}", dbg)?; // simplified - width with x?/X? is rare
         }
         FormatType::DebugUpperHex => {
             let dbg: &dyn Debug = arg;
@@ -410,8 +405,7 @@ fn format_full(
     Ok(())
 }
 
-// --- format_core: no width (for manual padding path) ---
-
+// no width (for manual padding path)
 fn format_core(
     buf: &mut String,
     arg: &dyn FormatValue,
@@ -443,8 +437,7 @@ fn format_core(
     Ok(())
 }
 
-// --- Manual padding ---
-
+/// Manual padding
 fn apply_padding(output: &mut String, raw: &str, spec: &FormatSpec, width: Option<usize>) {
     let Some(width) = width else {
         output.push_str(raw);

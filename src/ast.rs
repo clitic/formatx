@@ -1,8 +1,4 @@
 //! Typed AST for parsed format strings.
-//!
-//! All types use [`Span`] byte offsets instead of string slices,
-//! so nothing borrows from the source -[`Template`](crate::Template) owns the
-//! source `String` and resolves spans on demand.
 
 /// Byte range in the source format string.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -22,11 +18,11 @@ pub struct FormatString {
 /// A single piece of a format string.
 #[derive(Debug, Clone)]
 pub enum Segment {
-    /// Literal text -byte range into the source.
+    /// Literal text - byte range into the source.
     Literal(Span),
-    /// Escaped open brace `{{` → `{`.
+    /// Escaped open brace `{{` -> `{`.
     EscapedOpen,
-    /// Escaped close brace `}}` → `}`.
+    /// Escaped close brace `}}` -> `}`.
     EscapedClose,
     /// A `{...}` placeholder.
     Placeholder(Placeholder),
@@ -46,11 +42,11 @@ pub struct Placeholder {
 /// How a placeholder references its argument.
 #[derive(Debug, Clone)]
 pub enum Argument {
-    /// `{}` -uses the next implicit positional index.
+    /// `{}` - uses the next implicit positional index.
     Implicit,
-    /// `{0}`, `{1}` -explicit positional index.
+    /// `{0}`, `{1}` - explicit positional index.
     Positional(usize),
-    /// `{name}` -named argument, stored as byte range.
+    /// `{name}` - named argument, stored as byte range.
     Named(Span),
 }
 
@@ -111,7 +107,7 @@ pub enum Sign {
     Minus,
 }
 
-/// A width or precision value -either a literal number or a parameter reference.
+/// A width or precision value - either a literal number or a parameter reference.
 #[derive(Debug, Clone)]
 pub enum Count {
     /// A literal integer, e.g. `10` in `{:10}`.
@@ -123,18 +119,18 @@ pub enum Count {
 /// A parameter reference for width/precision.
 #[derive(Debug, Clone)]
 pub enum CountParam {
-    /// `{:0$}` -positional argument index.
+    /// `{:0$}` - positional argument index.
     Positional(usize),
-    /// `{:width$}` -named argument, stored as byte range.
+    /// `{:width$}` - named argument, stored as byte range.
     Named(Span),
 }
 
 /// Precision specification.
 #[derive(Debug, Clone)]
 pub enum Precision {
-    /// `.5` or `.prec$` -a count value.
+    /// `.5` or `.prec$` - a count value.
     Count(Count),
-    /// `.*` -precision is the next implicit positional argument.
+    /// `.*` - precision is the next implicit positional argument.
     Star,
 }
 

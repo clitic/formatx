@@ -1,15 +1,8 @@
-//! Single-pass parser for `std::fmt`-style format strings.
-//!
-//! Produces a [`FormatString`] AST from a `&str` source.
+//! Single-pass parser for `std::fmt` - style format strings.
 
 use crate::{ast::*, error::Error};
 
 /// Parse a format string into a [`FormatString`] AST.
-///
-/// This is a single-pass parser using `char_indices()`.
-/// It handles all `std::fmt` syntax: positional, named, and implicit arguments,
-/// fill/align, sign, `#`, `0`, width, precision (including `$`-params and `.*`),
-/// and format types.
 pub fn parse(source: &str) -> Result<FormatString, Error> {
     let mut segments = Vec::new();
     let bytes = source.as_bytes();
@@ -41,13 +34,16 @@ pub fn parse(source: &str) -> Result<FormatString, Error> {
                     pos += 2;
                 } else {
                     return Err(Error::Parse {
-                        span: Span { start: pos, end: pos + 1 },
+                        span: Span {
+                            start: pos,
+                            end: pos + 1,
+                        },
                         message: "unmatched `}`".to_string(),
                     });
                 }
             }
             _ => {
-                // Literal text -collect until we hit `{` or `}`
+                // Literal text - collect until we hit `{` or `}`
                 let start = pos;
                 while pos < len && bytes[pos] != b'{' && bytes[pos] != b'}' {
                     pos += 1;
@@ -85,7 +81,10 @@ fn parse_placeholder(
     // Expect closing `}`
     if pos >= len || bytes[pos] != b'}' {
         return Err(Error::Parse {
-            span: Span { start: brace_start, end: pos.min(len) },
+            span: Span {
+                start: brace_start,
+                end: pos.min(len),
+            },
             message: "unmatched `{`".to_string(),
         });
     }
@@ -94,7 +93,10 @@ fn parse_placeholder(
     let placeholder = Placeholder {
         argument,
         spec,
-        span: Span { start: brace_start, end: pos },
+        span: Span {
+            start: brace_start,
+            end: pos,
+        },
     };
 
     Ok((placeholder, pos))
@@ -111,12 +113,15 @@ fn parse_argument(
 
     if *pos >= len {
         return Err(Error::Parse {
-            span: Span { start: *pos, end: *pos },
+            span: Span {
+                start: *pos,
+                end: *pos,
+            },
             message: "unexpected end of format string".to_string(),
         });
     }
 
-    // `}` or `:` immediately → implicit
+    // `}` or `:` immediately -> implicit
     if bytes[*pos] == b'}' || bytes[*pos] == b':' {
         *implicit_counter += 1;
         return Ok(Argument::Implicit);
@@ -137,7 +142,7 @@ fn parse_argument(
             })?;
             return Ok(Argument::Positional(index));
         }
-        // Not a valid positional -reset and try as identifier
+        // Not a valid positional - reset and try as identifier
         *pos = start;
     }
 
@@ -148,19 +153,25 @@ fn parse_argument(
             *pos += 1;
         }
         if *pos < len && (bytes[*pos] == b'}' || bytes[*pos] == b':') {
-            return Ok(Argument::Named(Span { start: name_start, end: *pos }));
+            return Ok(Argument::Named(Span {
+                start: name_start,
+                end: *pos,
+            }));
         }
         // Reset if not valid
         *pos = start;
     }
 
     Err(Error::Parse {
-        span: Span { start, end: *pos + 1 },
+        span: Span {
+            start,
+            end: *pos + 1,
+        },
         message: "invalid placeholder argument".to_string(),
     })
 }
 
-/// Parse the format spec after `:` -fill, align, sign, `#`, `0`, width, `.precision`, type.
+/// Parse the format spec after `:` - fill, align, sign, `#`, `0`, width, `.precision`, type.
 fn parse_format_spec(
     source: &str,
     pos: &mut usize,
@@ -174,7 +185,7 @@ fn parse_format_spec(
         return Ok(spec);
     }
 
-    // Fill and align -2-char lookahead:
+    // Fill and align - 2-char lookahead:
     // If char at pos+1 is an align char, then char at pos is fill.
     // Otherwise, if char at pos is an align char, use default fill.
     let (fill, align) = parse_fill_align(source, pos);
@@ -208,13 +219,17 @@ fn parse_format_spec(
         return Ok(spec);
     }
 
-    // Zero-pad `0` -only if followed by a digit or `}` or `.` or type char
+    // Zero-pad `0` - only if followed by a digit or `}` or `.` or type char
     // (a bare `0` before width is zero-padding, not width)
     if bytes[*pos] == b'0' {
         // Peek ahead: if next char is a digit, this is zero-pad prefix
         // If next char is `}` or `.` or a type char, this could be width=0 or zero-pad
         // In std::fmt, `{:0}` is zero-pad with no width, `{:05}` is zero-pad with width 5
-        let next = if *pos + 1 < len { bytes[*pos + 1] } else { b'}' };
+        let next = if *pos + 1 < len {
+            bytes[*pos + 1]
+        } else {
+            b'}'
+        };
         if next.is_ascii_digit() || next == b'}' || next == b'.' || is_type_char(next) {
             spec.zero_pad = true;
             *pos += 1;
@@ -238,12 +253,15 @@ fn parse_format_spec(
 
         if *pos >= len {
             return Err(Error::Parse {
-                span: Span { start: *pos - 1, end: *pos },
+                span: Span {
+                    start: *pos - 1,
+                    end: *pos,
+                },
                 message: "expected precision after `.`".to_string(),
             });
         }
 
-        // `.*` -star precision
+        // `.*` - star precision
         if bytes[*pos] == b'*' {
             *pos += 1;
             spec.precision = Some(Precision::Star);
@@ -255,7 +273,10 @@ fn parse_format_spec(
                 spec.precision = Some(Precision::Count(count));
             } else {
                 return Err(Error::Parse {
-                    span: Span { start: *pos - 1, end: *pos },
+                    span: Span {
+                        start: *pos - 1,
+                        end: *pos,
+                    },
                     message: "expected precision value after `.`".to_string(),
                 });
             }
@@ -330,7 +351,7 @@ fn parse_count(source: &str, pos: &mut usize) -> Result<Option<Count>, Error> {
         while *pos < len && bytes[*pos].is_ascii_digit() {
             *pos += 1;
         }
-        // Check for `$` suffix → parameter reference
+        // Check for `$` suffix -> parameter reference
         if *pos < len && bytes[*pos] == b'$' {
             let num_str = &source[start..*pos];
             let index = num_str.parse::<usize>().map_err(|_| Error::Parse {
@@ -380,12 +401,30 @@ fn parse_format_type(source: &str, pos: &mut usize) -> Result<FormatType, Error>
 
     let start = *pos;
     let ty = match bytes[*pos] {
-        b'?' => { *pos += 1; FormatType::Debug }
-        b'o' => { *pos += 1; FormatType::Octal }
-        b'b' => { *pos += 1; FormatType::Binary }
-        b'e' => { *pos += 1; FormatType::LowerExp }
-        b'E' => { *pos += 1; FormatType::UpperExp }
-        b'p' => { *pos += 1; FormatType::Pointer }
+        b'?' => {
+            *pos += 1;
+            FormatType::Debug
+        }
+        b'o' => {
+            *pos += 1;
+            FormatType::Octal
+        }
+        b'b' => {
+            *pos += 1;
+            FormatType::Binary
+        }
+        b'e' => {
+            *pos += 1;
+            FormatType::LowerExp
+        }
+        b'E' => {
+            *pos += 1;
+            FormatType::UpperExp
+        }
+        b'p' => {
+            *pos += 1;
+            FormatType::Pointer
+        }
         b'x' => {
             *pos += 1;
             if *pos < len && bytes[*pos] == b'?' {
@@ -406,7 +445,10 @@ fn parse_format_type(source: &str, pos: &mut usize) -> Result<FormatType, Error>
         }
         c => {
             return Err(Error::Parse {
-                span: Span { start, end: *pos + 1 },
+                span: Span {
+                    start,
+                    end: *pos + 1,
+                },
                 message: format!("unknown format type: `{}`", c as char),
             });
         }
@@ -492,7 +534,10 @@ mod tests {
         let result = parse("{:10.5}").unwrap();
         if let Segment::Placeholder(p) = &result.segments[0] {
             assert!(matches!(p.spec.width, Some(Count::Literal(10))));
-            assert!(matches!(p.spec.precision, Some(Precision::Count(Count::Literal(5)))));
+            assert!(matches!(
+                p.spec.precision,
+                Some(Precision::Count(Count::Literal(5)))
+            ));
         }
     }
 
@@ -552,7 +597,8 @@ mod tests {
             } else {
                 panic!("expected named width param");
             }
-            if let Some(Precision::Count(Count::Param(CountParam::Named(span)))) = &p.spec.precision {
+            if let Some(Precision::Count(Count::Param(CountParam::Named(span)))) = &p.spec.precision
+            {
                 assert_eq!(resolve(source, *span), "prec");
             } else {
                 panic!("expected named precision param");

@@ -1,4 +1,4 @@
-//! The [`Renderer`] builder -collects arguments and produces formatted output.
+//! The [`Renderer`] builder - collects arguments and produces formatted output.
 
 use crate::{error::Error, format, template::Template, value::FormatValue};
 use std::fmt::{Debug, Display};

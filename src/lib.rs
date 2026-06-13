@@ -1,7 +1,7 @@
 //! Runtime string formatting with `std::fmt` syntax.
 //!
 //! `formatx` lets you format strings at runtime using the same syntax as
-//! `std::fmt` -`{}`, `{:?}`, `{name}`, `{:+#08.2}`, etc. -but with
+//! `std::fmt` -`{}`, `{:?}`, `{name}`, `{:+#08.2}`, etc. - but with
 //! runtime template strings instead of compile-time literals.
 //!
 //! # Quick Start
@@ -16,8 +16,8 @@
 //!
 //! # Strict vs. Lenient
 //!
-//! - [`formatx!`] -strict (default): missing args → `Err(Error::MissingArgument)`.
-//! - [`formatxl!`] -lenient: missing args → replaced with `""`.
+//! - [`formatx!`] - strict (default): missing args -> `Err(Error::MissingArgument)`.
+//! - [`formatxl!`] - lenient: missing args -> replaced with `""`.
 //!
 //! # Template Reuse
 //!
