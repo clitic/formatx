@@ -1,16 +1,16 @@
-use formatx::formatx;
-
-fn message(language: &str, name: &str, number: i32) -> String {
-    let s = match language {
-        "french" => "Bonjour {}, le nombre est {}",
-        "spanish" => "Hola {}, el numero es {}",
-        _ => "Hi {}, the number is {}",
-    };
-    formatx!(s, name, number).unwrap()
-}
+use formatx::formatxl;
 
 fn main() {
-    println!("{}", message("french", "Léa", 1));
-    println!("{}", message("spanish", "Sofia", 2));
-    println!("{}", message("english", "Ashley", 3));
+    // i18n example: templates with possibly missing arguments
+    let templates = [
+        ("en", "Hello {name}, welcome to {place}!"),
+        ("es", "Hola {name}, bienvenido a {place}!"),
+        ("ja", "{name}さん、{place}へようこそ！"),
+    ];
+
+    for (lang, template) in templates {
+        // Lenient mode: missing "place" won't error
+        let result = formatxl!(template, name = "Alice").unwrap();
+        println!("[{lang}] {result}");
+    }
 }
