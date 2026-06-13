@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Complete rewrite of the parsing and formatting engine.
+- New AST-based parser and renderer architecture.
+- Simplified `formatx!` macro.
+
+### Added
+
+- Integration tests.
+- `Value` type for runtime format values.
+
+### Removed
+
+- Old `format_spec`, `placeholder` and `utils` modules.
+
 ## [0.2.4] - 2024-05-04
 
 ### Fixed
@@ -52,11 +67,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2022-08-03
 
 [Unreleased]: https://github.com/clitic/formatx/compare/0.2.4...HEAD
-[0.2.4]: https://github.com/clitic/formatx/compare/v0.2.3...0.2.4
-[0.2.3]: https://github.com/clitic/formatx/compare/v0.2.2...0.2.3
-[0.2.2]: https://github.com/clitic/formatx/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/clitic/formatx/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/clitic/formatx/compare/c672c19...v0.2.0
+[0.2.4]: https://github.com/clitic/formatx/compare/0.2.3...0.2.4
+[0.2.3]: https://github.com/clitic/formatx/compare/0.2.2...0.2.3
+[0.2.2]: https://github.com/clitic/formatx/compare/0.2.1...0.2.2
+[0.2.1]: https://github.com/clitic/formatx/compare/0.2.0...0.2.1
+[0.2.0]: https://github.com/clitic/formatx/compare/c672c19...0.2.0
 [0.1.4]: https://github.com/clitic/formatx/compare/b2ee21f...c672c19
 [0.1.3]: https://github.com/clitic/formatx/compare/39eb3ee...b2ee21f
 [0.1.2]: https://github.com/clitic/formatx/compare/0f282e2...39eb3ee
