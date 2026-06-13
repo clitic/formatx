@@ -1,10 +1,9 @@
 //! Public macros for runtime string formatting.
 
-/// Format a runtime string - **strict mode** (default).
+/// Format a runtime string - **strict mode**.
 ///
-/// Returns `Err(Error::MissingArgument)` if any placeholder references an
-/// argument that was not provided. This is the safe default that catches
-/// missing arguments at runtime.
+/// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Produces [`Error::MissingArgument`](crate::Error::MissingArgument)
+/// if any placeholder references an argument that was not provided.
 ///
 /// # Examples
 ///
@@ -38,9 +37,8 @@ macro_rules! formatx {
 
 /// Format a runtime string - **lenient mode**.
 ///
-/// Missing arguments are replaced with an empty string `""` instead of
-/// producing an error. Useful for i18n templates where not all placeholders
-/// may be filled.
+/// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Missing arguments are replaced with an
+/// empty string `""` instead of producing an error.
 ///
 /// # Examples
 ///
