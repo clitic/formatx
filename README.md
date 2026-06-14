@@ -59,7 +59,7 @@ assert_eq!(r2, "Bob has 7 items");
 
 ## Supported Syntax
 
-`formatx` supports the full [`std::fmt`] formatting syntax:
+`formatx` supports most of the [`std::fmt`] formatting syntax:
 
 | Feature | Example | Supported |
 |---|---|---|
@@ -78,10 +78,17 @@ assert_eq!(r2, "Bob has 7 items");
 | `$`-parameter width/precision | `{:width$}`, `{:.prec$}` | ✅ |
 | Star precision | `{:.*}` | ✅ |
 | Escaped braces | `{{` `}}` | ✅ |
+| LowerHex | `{:x}` | ❌ |
+| UpperHex | `{:X}` | ❌ |
+| Octal | `{:o}` | ❌ |
+| Binary | `{:b}` | ❌ |
+| LowerExp | `{:e}` | ❌ |
+| UpperExp | `{:E}` | ❌ |
+| Pointer | `{:p}` | ❌ |
 
 ## Limitations
 
-1. Only types implementing `Display + Debug` are supported. Other [formatting traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) (`LowerHex`, `Binary`, `Octal`, etc.) are not supported and will return `Error::UnsupportedTrait`.
+1. Only types implementing [`Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html) + [`Debug`](https://doc.rust-lang.org/std/fmt/trait.Debug.html) are supported. Other [formatting traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) ([`LowerHex`](https://doc.rust-lang.org/std/fmt/trait.LowerHex.html), [`Binary`](https://doc.rust-lang.org/std/fmt/trait.Binary.html), [`Octal`](https://doc.rust-lang.org/std/fmt/trait.Octal.html), etc.) are not supported and will return [`Error::UnsupportedTrait`](https://docs.rs/formatx/latest/formatx/enum.Error.html#variant.UnsupportedTrait).
 
 2. Local variable interpolation is not supported since template strings are parsed at runtime.
 
