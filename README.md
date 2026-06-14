@@ -1,142 +1,107 @@
 <h1 align="center">formatx</h1>
 
-<p align="center">
-  <a href="https://crates.io/crates/formatx">
-    <img src="https://img.shields.io/crates/d/formatx?style=flat-square">
-  </a>
-  <a href="https://crates.io/crates/formatx">
-    <img src="https://img.shields.io/crates/v/formatx?style=flat-square">
-  </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/actions/workflow/status/clitic/formatx/ci.yml?logo=github&style=flat-square">
-  </a>
-  <a href="https://docs.rs/formatx/latest/formatx">
-    <img src="https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square">
-  </a>
-  <a href="https://github.com/clitic/formatx#license">
-    <img src="https://img.shields.io/crates/l/formatx?style=flat-square">
-  </a>
-  <a href="https://github.com/clitic/formatx">
-    <img src="https://img.shields.io/github/repo-size/clitic/formatx?style=flat-square">
-  </a>
-</p>
+[![Crate Downloads](https://img.shields.io/crates/d/formatx?logo=rust&style=flat-square)](https://crates.io/formatx)
+[![Crate Version](https://img.shields.io/crates/v/formatx?style=flat-square)](https://crates.io/crates/formatx)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/clitic/formatx/build.yml?logo=github&style=flat-square)](https://github.com/clitic/formatx/actions)
+[![Docs Status](https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square)](https://docs.rs/formatx)
+[![Crate License](https://img.shields.io/crates/l/formatx?style=flat-square)](https://crates.io/crates/formatx)
+[![Repo Size](https://img.shields.io/github/repo-size/clitic/formatx?logo=github&style=flat-square)](https://github.com/clitic/formatx)
 
-<p align="center">A macro for formatting non literal strings at runtime in Rust.</p>
+Runtime string formatting with [`std::fmt`] syntax.
 
-`formatx` is a dependency free string templating library with syntax derived from [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax). formatx exports [formatx!](https://docs.rs/formatx/latest/formatx/macro.formatx.html) macro which is similar to [format!](https://doc.rust-lang.org/std/macro.format.html) macro. formatx works by first parsing the template string and then it uses `format!` macro internally to replicate it's behaviour. formatx aims for formatting strings and numbers although an generic type can also be formatted like an [struct](https://github.com/clitic/formatx/blob/main/examples/struct.rs).
+`formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] - `{}`, `{:?}`, `{name}`, `{:+#08.2}`, etc. - but with runtime template strings instead of compile-time literals. Zero dependencies, `std` only.
 
 ## Getting Started
 
-Add this to your Cargo.toml file.
+Add this to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-formatx = "0.2.4"
+formatx = "0.3"
 ```
 
 Or add from command line.
 
 ```bash
-$ cargo add formatx
+cargo add formatx
 ```
 
-See [docs](https://docs.rs/formatx/latest/formatx) and [examples](https://github.com/clitic/formatx.rs/tree/main/examples) to 
-know how to use it.
+See [docs](https://docs.rs/formatx) and [examples](https://github.com/clitic/formatx/tree/main/examples) to know how to use it.
 
-## Example
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rust%3Aformatx.svg)](https://repology.org/project/rust%3Aformatx/versions)
 
-SOURCE: [format! with non literal string](https://users.rust-lang.org/t/format-with-non-literal-string/2057)
+## Examples
+
+### Named Arguments
 
 ```rust
 use formatx::formatx;
 
-fn message(language: &str, name: &str, number: i32) -> String {
-    let s = match language {
-        "french" => "Bonjour {}, le nombre est {}",
-        "spanish" => "Hola {}, el numero es {}",
-        _ => "Hi {}, the number is {}",
-    };
-    formatx!(s, name, number).unwrap()
-}
-
-fn main() {
-    println!("{}", message("french", "Léa", 1));
-    println!("{}", message("spanish", "Sofia", 2));
-    println!("{}", message("english", "Ashley", 3));
-}
+let result = formatx!("{name} scored {score:.1}%", name = "Alice", score = 95.678).unwrap();
+assert_eq!(result, "Alice scored 95.7%");
 ```
 
-OUTPUT
+### Template Reuse
 
+Parse once, render many times with [`Template`](https://docs.rs/formatx/latest/formatx/struct.Template.html):
+
+```rust
+use formatx::Template;
+
+let template = Template::new("{name} has {n} items").unwrap();
+
+let r1 = template.render().named("name", &"Alice").named("n", &3).finish().unwrap();
+let r2 = template.render().named("name", &"Bob").named("n", &7).finish().unwrap();
+
+assert_eq!(r1, "Alice has 3 items");
+assert_eq!(r2, "Bob has 7 items");
 ```
-Bonjour Léa, le nombre est 1
-Hola Sofia, el numero es 2
-Hi Ashley, the number is 3
-```
 
-## Syntax
+## Supported Syntax
 
-The main goal of `formatx` is to provide a almost identical syntax as of rust's format syntax. The syntax of `formatx` is identical to [std::fmt](https://doc.rust-lang.org/std/fmt/#syntax). You can also see gettext [documentation](https://www.gnu.org/software/gettext/manual/html_node/rust_002dformat.html), the rust's format syntax specifications is mentioned there too.
+`formatx` supports the full [`std::fmt`] formatting syntax:
+
+| Feature | Example | Supported |
+|---|---|---|
+| Implicit positional | `{}` | ✅ |
+| Explicit positional | `{0} {1}` | ✅ |
+| Named arguments | `{name}` | ✅ |
+| Mixed positional | `{1} {} {0} {}` | ✅ |
+| Debug | `{:?}`, `{:#?}` | ✅ |
+| Debug hex | `{:x?}`, `{:X?}` | ✅ |
+| Width | `{:10}` | ✅ |
+| Precision | `{:.5}` | ✅ |
+| Fill and align | `{:-<10}`, `{:^10}`, `{:*>10}` | ✅ |
+| Sign | `{:+}` | ✅ |
+| Alternate | `{:#}` | ✅ |
+| Zero-pad | `{:05}` | ✅ |
+| `$`-parameter width/precision | `{:width$}`, `{:.prec$}` | ✅ |
+| Star precision | `{:.*}` | ✅ |
+| Escaped braces | `{{` `}}` | ✅ |
 
 ## Limitations
 
-> **Warning**
-> Examples given below will always panic.
+1. Only types implementing `Display + Debug` are supported. Other [formatting traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) (`LowerHex`, `Binary`, `Octal`, etc.) are not supported and will return `Error::UnsupportedTrait`.
 
-1. Only types which implements [Display](https://doc.rust-lang.org/std/fmt/trait.Display.html) + [Debug](https://doc.rust-lang.org/std/fmt/trait.Debug.html) traits are supported. Other [formatting-traits](https://doc.rust-lang.org/std/fmt/#formatting-traits) aren't supported.
+2. Local variable interpolation is not supported since template strings are parsed at runtime.
 
-2. Local variable interpolation isn't supported.
+   ```rust
+   let people = "Rustaceans";
+   // This will NOT interpolate `people` - use named args instead:
+   formatx!("Hello {people}!", people = people).unwrap();
+   ```
 
-```rust
-let people = "Rustaceans";
-formatx!("Hello {people}!").unwrap();
-```
+## Unused Arguments
 
-3. Intermingling the two types of [positional](https://doc.rust-lang.org/std/fmt/#positional-parameters) specifiers isn't supported.
-
-```rust
-formatx!("{1} {} {0} {}", 1, 2).unwrap();
-```
-
-4. Parameter setting through `$` sign argument isn't supported.
+Extra arguments that aren't referenced by any placeholder are silently ignored in both `formatx!` and `formatxl!`. This is useful in localization scenarios where different translations may use different subsets of the available arguments.
 
 ```rust
-formatx!("{:width$}!", "x", width = 5).unwrap();
+use formatx::formatx;
+
+// "unused" is not referenced but causes no error
+let result = formatx!("{}", "used", "unused").unwrap();
+assert_eq!(result, "used");
 ```
-
-5. An asterisk `.*` can't be used to set [precision](https://doc.rust-lang.org/std/fmt/#precision).
-
-```rust
-formatx!("{:.*}", 5, 0.01).unwrap();
-```
-
-## Handling Of Positional Arguments
-
-Positional arguments are handled by an internal key which increments itself whenever an postional argument is passed through the macro. So, the behaviour is very different when compared to `format` macro.
-
-By default this internal key is set to `0` and when an positional argument is passed. `formatx` resolves the replacement by first checking if there is `0` key present in format string (eg. `Hello {0}`) or not, if the `0` is present then it replaces it, else if the `0` key is not present in the format string (eg.`Hello {}`) it replaces the first blank placeholder. After a replacement is made this internal key is increased by `1`.
-
-```rust
-asserteq!(
-  format!("{} {2} {} {1} {4} {} {3} {5} {6}", "zero", "one", "two", "three", "four", "five", "six"),
-  formatx!("{} {2} {} {1} {4} {} {3} {5} {6}", "zero", "one", "two", "three", "four", "five", "six", "seven", "eight").unwrap() // This line won't panic
-); // This line will panic
-```
-
-An error cannot be raised in such cases because `formatx` works at runtime and it doesn't know the future upcoming postitional arguments. So while designing your app keep this point in mind or simply use key value arguments. See issue [#7](https://github.com/clitic/formatx/issues/7) for more info.
-
-## Handling Of Unused Arguments
-
-Unlike rust's built-in `format!` macro, which reports an error if any provided arguments are not used in the format string, `formatx!` allows unused arguments. This can be particularly useful in localization scenarios, where translations may or may not require certain arguments depending on grammatical rules.
-
-## Packaging Status
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/rust%3Aformatx.svg)](https://repology.org/project/rust%3Aformatx/versions)
-
-## Alternatives
-
-1. [strfmt](https://github.com/vitiral/strfmt)
-2. [runtime-fmt](https://github.com/SpaceManiac/runtime-fmt)
 
 ## License
 
@@ -144,3 +109,5 @@ Dual Licensed
 
 - [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) ([LICENSE-APACHE](LICENSE-APACHE))
 - [MIT license](https://opensource.org/licenses/MIT) ([LICENSE-MIT](LICENSE-MIT))
+
+[`std::fmt`]: (https://doc.rust-lang.org/std/fmt/#syntax)
