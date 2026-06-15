@@ -9,6 +9,10 @@
 
 `formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template strings instead of compile-time literals with **zero** dependencies.
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/clitic/formatx/refs/heads/main/docs/images/benchmark.svg" width="700px">
+</div>
+
 ## Getting Started
 
 Add this to your `Cargo.toml` file.
@@ -39,6 +43,9 @@ let template = "{} scored {score:.1}% in {}";
 let result = formatx!(template, "Alice", "maths", score = 95.678).unwrap();
 assert_eq!(result, "Alice scored 95.7% in maths");
 ```
+
+> [!NOTE]
+> Extra arguments that aren't referenced by any placeholder are silently ignored in both `formatx!` and `formatxl!`.
 
 ### Template Reuse
 

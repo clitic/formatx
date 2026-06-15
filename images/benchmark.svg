@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 390" font-family="'Segoe UI', system-ui, sans-serif">
+<rect width="650" height="390" fill="#1e293b"/>
+<text x="325" y="28" text-anchor="middle" fill="#f1f5f9" font-size="16" font-weight="700">formatx! vs format!</text>
+<text x="325" y="44" text-anchor="middle" fill="#94a3b8" font-size="11">1000000 iterations · release mode · lower is better</text>
+<rect x="255" y="52" width="12" height="12" fill="#818cf8"/><text x="272" y="63" fill="#c7d2fe" font-size="11">format!</text>
+<rect x="345" y="52" width="12" height="12" fill="#fb923c"/><text x="362" y="63" fill="#fed7aa" font-size="11">formatx!</text>
+<text x="14" y="210" text-anchor="middle" fill="#64748b" font-size="10" transform="rotate(-90, 14, 210)">(ns/iter)</text>
+<line x1="70" y1="330" x2="630" y2="330" stroke="#334155" stroke-width="1"/>
+<text x="64" y="334" text-anchor="end" fill="#64748b" font-size="10">0</text>
+<line x1="70" y1="270" x2="630" y2="270" stroke="#334155" stroke-width="1"/>
+<text x="64" y="274" text-anchor="end" fill="#64748b" font-size="10">87</text>
+<line x1="70" y1="210" x2="630" y2="210" stroke="#334155" stroke-width="1"/>
+<text x="64" y="214" text-anchor="end" fill="#64748b" font-size="10">174</text>
+<line x1="70" y1="150" x2="630" y2="150" stroke="#334155" stroke-width="1"/>
+<text x="64" y="154" text-anchor="end" fill="#64748b" font-size="10">261</text>
+<line x1="70" y1="90" x2="630" y2="90" stroke="#334155" stroke-width="1"/>
+<text x="64" y="94" text-anchor="end" fill="#64748b" font-size="10">348</text>
+<rect x="91" y="312" width="45" height="18" fill="#818cf8"/>
+<text x="113" y="306" text-anchor="middle" fill="#c7d2fe" font-size="10">27 ns</text>
+<rect x="144" y="159" width="45" height="171" fill="#fb923c"/>
+<text x="166" y="153" text-anchor="middle" fill="#fed7aa" font-size="10">250 ns</text>
+<text x="140" y="346" text-anchor="middle" fill="#e2e8f0" font-size="11">{} + {} = {}</text>
+<rect x="231" y="311" width="45" height="19" fill="#818cf8"/>
+<text x="253" y="305" text-anchor="middle" fill="#c7d2fe" font-size="10">28 ns</text>
+<rect x="284" y="173" width="45" height="157" fill="#fb923c"/>
+<text x="306" y="167" text-anchor="middle" fill="#fed7aa" font-size="10">229 ns</text>
+<text x="280" y="346" text-anchor="middle" fill="#e2e8f0" font-size="11">{name} scored {score}%</text>
+<rect x="371" y="264" width="45" height="66" fill="#818cf8"/>
+<text x="393" y="258" text-anchor="middle" fill="#c7d2fe" font-size="10">97 ns</text>
+<rect x="424" y="177" width="45" height="153" fill="#fb923c"/>
+<text x="446" y="171" text-anchor="middle" fill="#fed7aa" font-size="10">223 ns</text>
+<text x="420" y="346" text-anchor="middle" fill="#e2e8f0" font-size="11">{:+08.2}</text>
+<rect x="511" y="228" width="45" height="102" fill="#818cf8"/>
+<text x="533" y="222" text-anchor="middle" fill="#c7d2fe" font-size="10">149 ns</text>
+<rect x="564" y="122" width="45" height="208" fill="#fb923c"/>
+<text x="586" y="116" text-anchor="middle" fill="#fed7aa" font-size="10">303 ns</text>
+<text x="560" y="346" text-anchor="middle" fill="#e2e8f0" font-size="11">{:-^20}</text>
+<text x="325" y="380" text-anchor="middle" fill="#64748b" font-size="10" font-style="italic">Expected overhead - formatx! parses and resolves format strings at runtime.</text>
+</svg>
