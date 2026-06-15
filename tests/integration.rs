@@ -1,8 +1,5 @@
-//! Integration tests -parity with `std::fmt`, strict/lenient modes, edge cases.
+use formatx::{Error, FormatType, Template, formatx, formatxl};
 
-use formatx::{formatx, formatxl, Error, FormatType, Template};
-
-/// Assert `formatx!` output matches `format!` for the same spec + args.
 macro_rules! assert_fmt {
     ($spec:literal $(, $arg:expr)* $(,)?) => {
         assert_eq!(
@@ -13,8 +10,6 @@ macro_rules! assert_fmt {
         );
     };
 }
-
-// --- Parity tests ---
 
 #[test]
 fn display_basic() {
@@ -78,9 +73,8 @@ fn debug_basic() {
 
 #[test]
 fn debug_pretty() {
-    // Vec doesn't implement Display, so pre-format it
-    let v = format!("{:#?}", vec![1, 2, 3]);
-    assert!(formatx!("{}", v).unwrap().contains("1"));
+    assert_fmt!("{:#?}", "hello");
+    assert_fmt!("{:#?}", 42);
 }
 
 #[test]
@@ -125,8 +119,6 @@ fn empty_string() {
     assert_eq!(formatx!("").unwrap(), "");
 }
 
-// --- Width/precision from args ($-params) ---
-
 #[test]
 fn width_from_positional_param() {
     assert_fmt!("{1:0$}", 10, "hi");
@@ -145,8 +137,6 @@ fn star_precision() {
     assert_fmt!("{:.*}", 3, 3.14159);
 }
 
-// --- Strict mode ---
-
 #[test]
 fn strict_missing_named() {
     let err = formatx!("{name} {missing}", name = "Alice").unwrap_err();
@@ -157,8 +147,6 @@ fn strict_missing_named() {
 fn strict_missing_positional() {
     assert!(formatx!("{0} {1}", "only_one").is_err());
 }
-
-// --- Lenient mode ---
 
 #[test]
 fn lenient_missing_named() {
@@ -177,8 +165,6 @@ fn lenient_missing_positional() {
 fn lenient_all_present() {
     assert_eq!(formatxl!("{} {}", "a", "b").unwrap(), "a b");
 }
-
-// --- Error tests ---
 
 #[test]
 fn unsupported_hex_format() {
@@ -201,8 +187,6 @@ fn unsupported_binary_format() {
 fn parse_error_unmatched_brace() {
     assert!(formatx!("{").is_err());
 }
-
-// --- Template API ---
 
 #[test]
 fn template_reuse() {
@@ -244,8 +228,6 @@ fn template_from_str() {
     let t: Template = "{:?}".parse().unwrap();
     assert_eq!(t.render().arg(&42).finish().unwrap(), "42");
 }
-
-// --- Edge cases ---
 
 #[test]
 fn unicode_fill() {
