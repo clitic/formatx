@@ -5,10 +5,6 @@ use std::fmt::{Debug, Display};
 
 /// A builder for rendering a [`Template`] with arguments.
 ///
-/// Created by [`Template::render()`]. Collects positional and named arguments,
-/// then produces the formatted output via [`finish()`](Renderer::finish) (strict)
-/// or [`finish_lenient()`](Renderer::finish_lenient) (lenient).
-///
 /// # Examples
 ///
 /// ```

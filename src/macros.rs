@@ -1,6 +1,6 @@
 //! Public macros for runtime string formatting.
 
-/// Format a runtime string - **strict mode**.
+/// Format a runtime string in **strict mode**.
 ///
 /// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Produces [`Error::MissingArgument`](crate::Error::MissingArgument)
 /// if any placeholder references an argument that was not provided.
@@ -35,7 +35,7 @@ macro_rules! formatx {
     };
 }
 
-/// Format a runtime string - **lenient mode**.
+/// Format a runtime string in **lenient mode**.
 ///
 /// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Missing arguments are replaced with an
 /// empty string `""` instead of producing an error.
