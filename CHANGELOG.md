@@ -7,20 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Complete rewrite of the parsing and formatting engine.
-- New AST-based parser and renderer architecture.
-- Simplified `formatx!` macro.
+## [0.3.0] - 2026-06-15
 
 ### Added
 
-- Integration tests.
-- `Value` type for runtime format values.
+- `formatxl!` macro for **lenient mode** - missing arguments are replaced with `""` instead of returning an error.
+- Support for mixed positional and implicit arguments (`{1} {} {0} {}`).
+- Support for `$`-parameter width and precision (`{:width$}`, `{:.prec$}`).
+- Support for star precision (`{:.*}`).
 
-### Removed
+### Changed
 
-- Old `format_spec`, `placeholder` and `utils` modules.
+- New AST-based parser with span tracking for better error messages.
+- Dual-path format engine: fast path for plain `{}` / `{:?}`, full path for complex specs.
+- Manual padding for custom fill/align, delegating to `std::fmt` otherwise.
+- Removed support for HTML-like attributes to maintain full parity with `std::fmt` syntax.
 
 ## [0.2.4] - 2024-05-04
 
@@ -66,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2022-08-03
 
-[Unreleased]: https://github.com/clitic/formatx/compare/0.2.4...HEAD
+[Unreleased]: https://github.com/clitic/formatx/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/clitic/formatx/compare/0.2.4...0.3.0
 [0.2.4]: https://github.com/clitic/formatx/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/clitic/formatx/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/clitic/formatx/compare/0.2.1...0.2.2
