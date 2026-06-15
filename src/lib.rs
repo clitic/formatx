@@ -51,10 +51,8 @@ mod renderer;
 mod template;
 mod value;
 
+pub use ast::FormatType;
 pub use error::Error;
 pub use renderer::Renderer;
 pub use template::Template;
 pub use value::FormatValue;
-
-// Re-export FormatType for error matching
-pub use ast::FormatType;

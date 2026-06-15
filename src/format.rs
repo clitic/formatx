@@ -1,138 +1,7 @@
 //! Format engine - applies [`FormatSpec`] to produce formatted output.
-//!
-//! Two paths:
-//! - **Fast path**: plain `{}` or `{:?}` -`write!` directly to output.
-//! - **Full path**: delegates sign/alternate/precision/width to `std::fmt` via `write!`,
-//!   then handles fill+align manually when custom fill is specified.
 
 use crate::{ast::*, error::Error, value::FormatValue};
 use std::fmt::{Debug, Write};
-
-// Display with all options including width and zero-pad
-macro_rules! fmt_display_full {
-    ($buf:expr, $arg:expr, $sign:expr, $alt:expr, $zero:expr, $width:expr, $prec:expr) => {
-        match ($sign, $alt, $zero, $width, $prec) {
-            (false, false, _, None, None) => write!($buf, "{}", $arg),
-            (true, false, _, None, None) => write!($buf, "{:+}", $arg),
-            (false, true, _, None, None) => write!($buf, "{:#}", $arg),
-            (true, true, _, None, None) => write!($buf, "{:+#}", $arg),
-            (false, false, _, None, Some(p)) => write!($buf, "{:.prec$}", $arg, prec = p),
-            (true, false, _, None, Some(p)) => write!($buf, "{:+.prec$}", $arg, prec = p),
-            (false, true, _, None, Some(p)) => write!($buf, "{:#.prec$}", $arg, prec = p),
-            (true, true, _, None, Some(p)) => write!($buf, "{:+#.prec$}", $arg, prec = p),
-            (false, false, false, Some(w), None) => write!($buf, "{:width$}", $arg, width = w),
-            (true, false, false, Some(w), None) => write!($buf, "{:+width$}", $arg, width = w),
-            (false, true, false, Some(w), None) => write!($buf, "{:#width$}", $arg, width = w),
-            (true, true, false, Some(w), None) => write!($buf, "{:+#width$}", $arg, width = w),
-            (false, false, false, Some(w), Some(p)) => {
-                write!($buf, "{:width$.prec$}", $arg, width = w, prec = p)
-            }
-            (true, false, false, Some(w), Some(p)) => {
-                write!($buf, "{:+width$.prec$}", $arg, width = w, prec = p)
-            }
-            (false, true, false, Some(w), Some(p)) => {
-                write!($buf, "{:#width$.prec$}", $arg, width = w, prec = p)
-            }
-            (true, true, false, Some(w), Some(p)) => {
-                write!($buf, "{:+#width$.prec$}", $arg, width = w, prec = p)
-            }
-            (false, false, true, Some(w), None) => write!($buf, "{:0width$}", $arg, width = w),
-            (true, false, true, Some(w), None) => write!($buf, "{:+0width$}", $arg, width = w),
-            (false, true, true, Some(w), None) => write!($buf, "{:#0width$}", $arg, width = w),
-            (true, true, true, Some(w), None) => write!($buf, "{:+#0width$}", $arg, width = w),
-            (false, false, true, Some(w), Some(p)) => {
-                write!($buf, "{:0width$.prec$}", $arg, width = w, prec = p)
-            }
-            (true, false, true, Some(w), Some(p)) => {
-                write!($buf, "{:+0width$.prec$}", $arg, width = w, prec = p)
-            }
-            (false, true, true, Some(w), Some(p)) => {
-                write!($buf, "{:#0width$.prec$}", $arg, width = w, prec = p)
-            }
-            (true, true, true, Some(w), Some(p)) => {
-                write!($buf, "{:+#0width$.prec$}", $arg, width = w, prec = p)
-            }
-        }
-    };
-}
-
-macro_rules! fmt_debug_full {
-    ($buf:expr, $arg:expr, $sign:expr, $alt:expr, $zero:expr, $width:expr, $prec:expr) => {
-        match ($sign, $alt, $zero, $width, $prec) {
-            (false, false, _, None, None) => write!($buf, "{:?}", $arg),
-            (true, false, _, None, None) => write!($buf, "{:+?}", $arg),
-            (false, true, _, None, None) => write!($buf, "{:#?}", $arg),
-            (true, true, _, None, None) => write!($buf, "{:+#?}", $arg),
-            (false, false, _, None, Some(p)) => write!($buf, "{:.prec$?}", $arg, prec = p),
-            (true, false, _, None, Some(p)) => write!($buf, "{:+.prec$?}", $arg, prec = p),
-            (false, true, _, None, Some(p)) => write!($buf, "{:#.prec$?}", $arg, prec = p),
-            (true, true, _, None, Some(p)) => write!($buf, "{:+#.prec$?}", $arg, prec = p),
-            (false, false, false, Some(w), None) => write!($buf, "{:width$?}", $arg, width = w),
-            (true, false, false, Some(w), None) => write!($buf, "{:+width$?}", $arg, width = w),
-            (false, true, false, Some(w), None) => write!($buf, "{:#width$?}", $arg, width = w),
-            (true, true, false, Some(w), None) => write!($buf, "{:+#width$?}", $arg, width = w),
-            (false, false, false, Some(w), Some(p)) => {
-                write!($buf, "{:width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (true, false, false, Some(w), Some(p)) => {
-                write!($buf, "{:+width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (false, true, false, Some(w), Some(p)) => {
-                write!($buf, "{:#width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (true, true, false, Some(w), Some(p)) => {
-                write!($buf, "{:+#width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (false, false, true, Some(w), None) => write!($buf, "{:0width$?}", $arg, width = w),
-            (true, false, true, Some(w), None) => write!($buf, "{:+0width$?}", $arg, width = w),
-            (false, true, true, Some(w), None) => write!($buf, "{:#0width$?}", $arg, width = w),
-            (true, true, true, Some(w), None) => write!($buf, "{:+#0width$?}", $arg, width = w),
-            (false, false, true, Some(w), Some(p)) => {
-                write!($buf, "{:0width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (true, false, true, Some(w), Some(p)) => {
-                write!($buf, "{:+0width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (false, true, true, Some(w), Some(p)) => {
-                write!($buf, "{:#0width$.prec$?}", $arg, width = w, prec = p)
-            }
-            (true, true, true, Some(w), Some(p)) => {
-                write!($buf, "{:+#0width$.prec$?}", $arg, width = w, prec = p)
-            }
-        }
-    };
-}
-
-// Display core (no width - for manual padding path)
-macro_rules! fmt_display_core {
-    ($buf:expr, $arg:expr, $sign:expr, $alt:expr, $prec:expr) => {
-        match ($sign, $alt, $prec) {
-            (false, false, None) => write!($buf, "{}", $arg),
-            (true, false, None) => write!($buf, "{:+}", $arg),
-            (false, true, None) => write!($buf, "{:#}", $arg),
-            (true, true, None) => write!($buf, "{:+#}", $arg),
-            (false, false, Some(p)) => write!($buf, "{:.prec$}", $arg, prec = p),
-            (true, false, Some(p)) => write!($buf, "{:+.prec$}", $arg, prec = p),
-            (false, true, Some(p)) => write!($buf, "{:#.prec$}", $arg, prec = p),
-            (true, true, Some(p)) => write!($buf, "{:+#.prec$}", $arg, prec = p),
-        }
-    };
-}
-
-macro_rules! fmt_debug_core {
-    ($buf:expr, $arg:expr, $sign:expr, $alt:expr, $prec:expr) => {
-        match ($sign, $alt, $prec) {
-            (false, false, None) => write!($buf, "{:?}", $arg),
-            (true, false, None) => write!($buf, "{:+?}", $arg),
-            (false, true, None) => write!($buf, "{:#?}", $arg),
-            (true, true, None) => write!($buf, "{:+#?}", $arg),
-            (false, false, Some(p)) => write!($buf, "{:.prec$?}", $arg, prec = p),
-            (true, false, Some(p)) => write!($buf, "{:+.prec$?}", $arg, prec = p),
-            (false, true, Some(p)) => write!($buf, "{:#.prec$?}", $arg, prec = p),
-            (true, true, Some(p)) => write!($buf, "{:+#.prec$?}", $arg, prec = p),
-        }
-    };
-}
 
 /// Render a parsed [`FormatString`] into `output` using the provided arguments.
 pub fn render(
@@ -356,7 +225,7 @@ fn format_debug_fast(
     Ok(())
 }
 
-/// let std::fmt handle width natively
+/// Let std::fmt handle width natively.
 fn format_full(
     output: &mut String,
     arg: &dyn FormatValue,
@@ -364,36 +233,102 @@ fn format_full(
     width: Option<usize>,
     precision: Option<usize>,
 ) -> Result<(), Error> {
-    let sign_plus = matches!(spec.sign, Some(Sign::Plus));
-    let alternate = spec.alternate;
+    let sign = matches!(spec.sign, Some(Sign::Plus));
+    let alt = spec.alternate;
 
     match spec.format_type {
         FormatType::Display => {
-            fmt_display_full!(
-                output,
-                arg,
-                sign_plus,
-                alternate,
-                spec.zero_pad,
-                width,
-                precision
-            )?;
+            match (sign, alt, spec.zero_pad, width, precision) {
+                (false, false, _, None, None) => write!(output, "{}", arg),
+                (true, false, _, None, None) => write!(output, "{:+}", arg),
+                (false, true, _, None, None) => write!(output, "{:#}", arg),
+                (true, true, _, None, None) => write!(output, "{:+#}", arg),
+                (false, false, _, None, Some(p)) => write!(output, "{:.prec$}", arg, prec = p),
+                (true, false, _, None, Some(p)) => write!(output, "{:+.prec$}", arg, prec = p),
+                (false, true, _, None, Some(p)) => write!(output, "{:#.prec$}", arg, prec = p),
+                (true, true, _, None, Some(p)) => write!(output, "{:+#.prec$}", arg, prec = p),
+                (false, false, false, Some(w), None) => write!(output, "{:width$}", arg, width = w),
+                (true, false, false, Some(w), None) => write!(output, "{:+width$}", arg, width = w),
+                (false, true, false, Some(w), None) => write!(output, "{:#width$}", arg, width = w),
+                (true, true, false, Some(w), None) => write!(output, "{:+#width$}", arg, width = w),
+                (false, false, false, Some(w), Some(p)) => {
+                    write!(output, "{:width$.prec$}", arg, width = w, prec = p)
+                }
+                (true, false, false, Some(w), Some(p)) => {
+                    write!(output, "{:+width$.prec$}", arg, width = w, prec = p)
+                }
+                (false, true, false, Some(w), Some(p)) => {
+                    write!(output, "{:#width$.prec$}", arg, width = w, prec = p)
+                }
+                (true, true, false, Some(w), Some(p)) => {
+                    write!(output, "{:+#width$.prec$}", arg, width = w, prec = p)
+                }
+                (false, false, true, Some(w), None) => write!(output, "{:0width$}", arg, width = w),
+                (true, false, true, Some(w), None) => write!(output, "{:+0width$}", arg, width = w),
+                (false, true, true, Some(w), None) => write!(output, "{:#0width$}", arg, width = w),
+                (true, true, true, Some(w), None) => write!(output, "{:+#0width$}", arg, width = w),
+                (false, false, true, Some(w), Some(p)) => {
+                    write!(output, "{:0width$.prec$}", arg, width = w, prec = p)
+                }
+                (true, false, true, Some(w), Some(p)) => {
+                    write!(output, "{:+0width$.prec$}", arg, width = w, prec = p)
+                }
+                (false, true, true, Some(w), Some(p)) => {
+                    write!(output, "{:#0width$.prec$}", arg, width = w, prec = p)
+                }
+                (true, true, true, Some(w), Some(p)) => {
+                    write!(output, "{:+#0width$.prec$}", arg, width = w, prec = p)
+                }
+            }?;
         }
         FormatType::Debug => {
             let dbg: &dyn Debug = arg;
-            fmt_debug_full!(
-                output,
-                dbg,
-                sign_plus,
-                alternate,
-                spec.zero_pad,
-                width,
-                precision
-            )?;
+            match (sign, alt, spec.zero_pad, width, precision) {
+                (false, false, _, None, None) => write!(output, "{:?}", dbg),
+                (true, false, _, None, None) => write!(output, "{:+?}", dbg),
+                (false, true, _, None, None) => write!(output, "{:#?}", dbg),
+                (true, true, _, None, None) => write!(output, "{:+#?}", dbg),
+                (false, false, _, None, Some(p)) => write!(output, "{:.prec$?}", dbg, prec = p),
+                (true, false, _, None, Some(p)) => write!(output, "{:+.prec$?}", dbg, prec = p),
+                (false, true, _, None, Some(p)) => write!(output, "{:#.prec$?}", dbg, prec = p),
+                (true, true, _, None, Some(p)) => write!(output, "{:+#.prec$?}", dbg, prec = p),
+                (false, false, false, Some(w), None) => write!(output, "{:width$?}", dbg, width = w),
+                (true, false, false, Some(w), None) => write!(output, "{:+width$?}", dbg, width = w),
+                (false, true, false, Some(w), None) => write!(output, "{:#width$?}", dbg, width = w),
+                (true, true, false, Some(w), None) => write!(output, "{:+#width$?}", dbg, width = w),
+                (false, false, false, Some(w), Some(p)) => {
+                    write!(output, "{:width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (true, false, false, Some(w), Some(p)) => {
+                    write!(output, "{:+width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (false, true, false, Some(w), Some(p)) => {
+                    write!(output, "{:#width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (true, true, false, Some(w), Some(p)) => {
+                    write!(output, "{:+#width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (false, false, true, Some(w), None) => write!(output, "{:0width$?}", dbg, width = w),
+                (true, false, true, Some(w), None) => write!(output, "{:+0width$?}", dbg, width = w),
+                (false, true, true, Some(w), None) => write!(output, "{:#0width$?}", dbg, width = w),
+                (true, true, true, Some(w), None) => write!(output, "{:+#0width$?}", dbg, width = w),
+                (false, false, true, Some(w), Some(p)) => {
+                    write!(output, "{:0width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (true, false, true, Some(w), Some(p)) => {
+                    write!(output, "{:+0width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (false, true, true, Some(w), Some(p)) => {
+                    write!(output, "{:#0width$.prec$?}", dbg, width = w, prec = p)
+                }
+                (true, true, true, Some(w), Some(p)) => {
+                    write!(output, "{:+#0width$.prec$?}", dbg, width = w, prec = p)
+                }
+            }?;
         }
         FormatType::DebugLowerHex => {
             let dbg: &dyn Debug = arg;
-            write!(output, "{:x?}", dbg)?; // simplified - width with x?/X? is rare
+            write!(output, "{:x?}", dbg)?;
         }
         FormatType::DebugUpperHex => {
             let dbg: &dyn Debug = arg;
@@ -405,23 +340,41 @@ fn format_full(
     Ok(())
 }
 
-// no width (for manual padding path)
+// No width (for manual padding path).
 fn format_core(
     buf: &mut String,
     arg: &dyn FormatValue,
     spec: &FormatSpec,
     precision: Option<usize>,
 ) -> Result<(), Error> {
-    let sign_plus = matches!(spec.sign, Some(Sign::Plus));
-    let alternate = spec.alternate;
+    let sign = matches!(spec.sign, Some(Sign::Plus));
+    let alt = spec.alternate;
 
     match spec.format_type {
         FormatType::Display => {
-            fmt_display_core!(buf, arg, sign_plus, alternate, precision)?;
+            match (sign, alt, precision) {
+                (false, false, None) => write!(buf, "{}", arg),
+                (true, false, None) => write!(buf, "{:+}", arg),
+                (false, true, None) => write!(buf, "{:#}", arg),
+                (true, true, None) => write!(buf, "{:+#}", arg),
+                (false, false, Some(p)) => write!(buf, "{:.prec$}", arg, prec = p),
+                (true, false, Some(p)) => write!(buf, "{:+.prec$}", arg, prec = p),
+                (false, true, Some(p)) => write!(buf, "{:#.prec$}", arg, prec = p),
+                (true, true, Some(p)) => write!(buf, "{:+#.prec$}", arg, prec = p),
+            }?;
         }
         FormatType::Debug => {
             let dbg: &dyn Debug = arg;
-            fmt_debug_core!(buf, dbg, sign_plus, alternate, precision)?;
+            match (sign, alt, precision) {
+                (false, false, None) => write!(buf, "{:?}", dbg),
+                (true, false, None) => write!(buf, "{:+?}", dbg),
+                (false, true, None) => write!(buf, "{:#?}", dbg),
+                (true, true, None) => write!(buf, "{:+#?}", dbg),
+                (false, false, Some(p)) => write!(buf, "{:.prec$?}", dbg, prec = p),
+                (true, false, Some(p)) => write!(buf, "{:+.prec$?}", dbg, prec = p),
+                (false, true, Some(p)) => write!(buf, "{:#.prec$?}", dbg, prec = p),
+                (true, true, Some(p)) => write!(buf, "{:+#.prec$?}", dbg, prec = p),
+            }?;
         }
         FormatType::DebugLowerHex => {
             let dbg: &dyn Debug = arg;
@@ -437,7 +390,7 @@ fn format_core(
     Ok(())
 }
 
-/// Manual padding
+/// Manual padding.
 fn apply_padding(output: &mut String, raw: &str, spec: &FormatSpec, width: Option<usize>) {
     let Some(width) = width else {
         output.push_str(raw);
