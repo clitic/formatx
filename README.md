@@ -1,6 +1,6 @@
 <h1 align="center">formatx</h1>
 
-[![Crate Downloads](https://img.shields.io/crates/d/formatx?logo=rust&style=flat-square)](https://crates.io/formatx)
+[![Crate Downloads](https://img.shields.io/crates/d/formatx?logo=rust&style=flat-square)](https://crates.io/crates/formatx)
 [![Crate Version](https://img.shields.io/crates/v/formatx?logo=rust&style=flat-square)](https://crates.io/crates/formatx)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/clitic/formatx/build.yml?logo=github&style=flat-square)](https://github.com/clitic/formatx/actions)
 [![Docs Status](https://img.shields.io/docsrs/formatx?logo=docsdotrs&style=flat-square)](https://docs.rs/formatx)
