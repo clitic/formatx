@@ -1,6 +1,7 @@
 //! Single-pass parser for `std::fmt` - style format strings.
 
 use crate::{ast::*, error::Error};
+use alloc::{format, string::ToString, vec::Vec};
 
 /// Parse a format string into a [`FormatString`] AST.
 pub fn parse(source: &str) -> Result<FormatString, Error> {

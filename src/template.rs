@@ -6,7 +6,8 @@ use crate::{
     parser,
     renderer::Renderer,
 };
-use std::{fmt, str::FromStr};
+use alloc::vec::Vec;
+use core::fmt;
 
 /// An owned, parsed format string that can be rendered many times with different arguments.
 ///
@@ -25,18 +26,17 @@ use std::{fmt, str::FromStr};
 ///     .unwrap();
 /// assert_eq!(result, "Alice scored 95.7%");
 /// ```
-pub struct Template {
-    source: String,
+pub struct Template<'a> {
+    source: &'a str,
     parsed: FormatString,
 }
 
-impl Template {
+impl<'a> Template<'a> {
     /// Parse a format string into a reusable template.
     ///
     /// Returns `Err` if the format string is malformed (unmatched braces, invalid specs, etc.).
-    pub fn new<S: Into<String>>(source: S) -> Result<Self, Error> {
-        let source = source.into();
-        let parsed = parser::parse(&source)?;
+    pub fn new(source: &'a str) -> Result<Self, Error> {
+        let parsed = parser::parse(source)?;
         Ok(Self { source, parsed })
     }
 
@@ -91,13 +91,13 @@ impl Template {
     }
 }
 
-impl fmt::Display for Template {
+impl<'a> fmt::Display for Template<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.source)
     }
 }
 
-impl fmt::Debug for Template {
+impl<'a> fmt::Debug for Template<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Template")
             .field("source", &self.source)
@@ -105,10 +105,8 @@ impl fmt::Debug for Template {
     }
 }
 
-impl FromStr for Template {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::new(s)
+impl<'a> From<&'a str> for Template<'a> {
+    fn from(source: &'a str) -> Self {
+        Self::new(source).unwrap()
     }
 }

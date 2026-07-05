@@ -1,26 +1,18 @@
 //! Error types for formatx.
 
 use crate::ast::{FormatType, Span};
-use std::fmt;
+use alloc::string::String;
+use core::fmt;
 
 /// Errors that can occur during parsing or formatting.
 #[derive(Debug)]
 pub enum Error {
     /// The format string could not be parsed.
-    Parse {
-        span: Span,
-        message: String,
-    },
+    Parse { span: Span, message: String },
     /// A placeholder references an argument that was not provided.
-    MissingArgument {
-        name: String,
-        span: Span,
-    },
+    MissingArgument { name: String, span: Span },
     /// A format type (e.g. `{:x}`) requires a trait we don't support.
-    UnsupportedTrait {
-        format_type: FormatType,
-        span: Span,
-    },
+    UnsupportedTrait { format_type: FormatType, span: Span },
     /// An underlying `std::fmt::Error` occurred during formatting.
     Format(fmt::Error),
 }
@@ -52,8 +44,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for Error {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         if let Self::Format(e) = self {
             Some(e)
         } else {

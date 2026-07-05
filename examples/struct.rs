@@ -30,12 +30,14 @@ fn main() {
 
     // Template reuse
     let template = formatx::Template::new("Point {name}: {point}").unwrap();
-    let r1 = template.render()
+    let r1 = template
+        .render()
         .named("name", &"Origin")
         .named("point", &origin)
         .finish()
         .unwrap();
-    let r2 = template.render()
+    let r2 = template
+        .render()
         .named("name", &"Target")
         .named("point", &target)
         .finish()

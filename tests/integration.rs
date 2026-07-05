@@ -224,12 +224,6 @@ fn template_placeholders() {
 }
 
 #[test]
-fn template_from_str() {
-    let t: Template = "{:?}".parse().unwrap();
-    assert_eq!(t.render().arg(&42).finish().unwrap(), "42");
-}
-
-#[test]
 fn unicode_fill() {
     assert_fmt!("{:★>10}", "hi");
 }

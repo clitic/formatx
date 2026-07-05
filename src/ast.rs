@@ -1,5 +1,7 @@
 //! Typed AST for parsed format strings.
 
+use alloc::vec::Vec;
+
 /// Byte range in the source format string.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
@@ -51,7 +53,7 @@ pub enum Argument {
 }
 
 /// The full format specification after `:` inside a placeholder.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FormatSpec {
     pub fill: Option<char>,
     pub align: Option<Align>,
@@ -82,13 +84,7 @@ impl FormatSpec {
     /// meaning we can take the fast path and `write!` directly.
     #[inline]
     pub fn is_default(&self) -> bool {
-        self.fill.is_none()
-            && self.align.is_none()
-            && self.sign.is_none()
-            && !self.alternate
-            && !self.zero_pad
-            && self.width.is_none()
-            && self.precision.is_none()
+        self == &Self::default()
     }
 }
 
@@ -108,7 +104,7 @@ pub enum Sign {
 }
 
 /// A width or precision value - either a literal number or a parameter reference.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Count {
     /// A literal integer, e.g. `10` in `{:10}`.
     Literal(usize),
@@ -117,7 +113,7 @@ pub enum Count {
 }
 
 /// A parameter reference for width/precision.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CountParam {
     /// `{:0$}` - positional argument index.
     Positional(usize),
@@ -126,7 +122,7 @@ pub enum CountParam {
 }
 
 /// Precision specification.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Precision {
     /// `.5` or `.prec$` - a count value.
     Count(Count),

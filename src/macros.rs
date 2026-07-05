@@ -21,12 +21,12 @@
 #[macro_export]
 macro_rules! formatx {
     ($template:expr $(,)?) => {
-        (|| -> ::std::result::Result<::std::string::String, $crate::Error> {
+        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
             $crate::Template::new($template)?.render().finish()
         })()
     };
     ($template:expr, $($args:tt)*) => {
-        (|| -> ::std::result::Result<::std::string::String, $crate::Error> {
+        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
             let t = $crate::Template::new($template)?;
             let mut r = t.render();
             $crate::_formatx_internal!(r, $($args)*);
@@ -52,12 +52,12 @@ macro_rules! formatx {
 #[macro_export]
 macro_rules! formatxl {
     ($template:expr $(,)?) => {
-        (|| -> ::std::result::Result<::std::string::String, $crate::Error> {
+        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
             $crate::Template::new($template)?.render().finish_lenient()
         })()
     };
     ($template:expr, $($args:tt)*) => {
-        (|| -> ::std::result::Result<::std::string::String, $crate::Error> {
+        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
             let t = $crate::Template::new($template)?;
             let mut r = t.render();
             $crate::_formatx_internal!(r, $($args)*);
