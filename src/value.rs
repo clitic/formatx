@@ -1,4 +1,4 @@
-//! The [`FormatValue`] marker trait and zero-allocation argument storage.
+//! The [`FormatValue`] marker trait and argument storage.
 
 use core::fmt::{Debug, Display};
 
@@ -12,44 +12,36 @@ pub trait FormatValue: Display + Debug {}
 
 impl<T: Display + Debug + ?Sized> FormatValue for T {}
 
-/// A format argument that can hold either a trait object reference or a string
-/// slice directly, enabling zero-allocation handling of `&str` values.
+/// A format argument - either a trait object reference or a `&str` slice.
+///
+/// Two variants handle the `str` unsized coercion gap: `&T` where `T: Sized`
+/// can coerce to `&dyn FormatValue` directly, but `&str` cannot since `str`
+/// is unsized. The `Str` variant stores the `&str` directly so that callers
+/// can pass string literals without extra `&` indirection.
 pub enum FormatArg<'a> {
-    /// Any `Sized` value borrowed as a trait object.
-    Dyn(&'a dyn FormatValue),
-    /// A string slice, stored by value.
+    /// A reference to any sized `FormatValue`.
+    Ref(&'a dyn FormatValue),
+    /// A string slice (avoids the unsized coercion issue).
     Str(&'a str),
 }
 
 impl<'a> FormatArg<'a> {
-    /// Borrow this argument as a `&dyn FormatValue` for formatting.
-    pub(crate) fn as_value(&self) -> &dyn FormatValue {
+    pub(crate) fn value(&self) -> &dyn FormatValue {
         match self {
-            FormatArg::Dyn(value) => *value,
-            FormatArg::Str(s) => s,
+            Self::Ref(v) => *v,
+            Self::Str(s) => s,
         }
     }
 }
 
-/// Conversion into a [`FormatArg`] without allocation.
-///
-/// This trait is implemented for `&str` (→ [`FormatArg::Str`]) and for
-/// `&T where T: Display + Debug` (→ [`FormatArg::Dyn`]), allowing both
-/// to be passed directly to [`Renderer::arg`](crate::Renderer::arg) and
-/// [`Renderer::named`](crate::Renderer::named).
-pub trait IntoFormatArg<'a> {
-    /// Convert `self` into a [`FormatArg`].
-    fn into_format_arg(self) -> FormatArg<'a>;
-}
-
-impl<'a> IntoFormatArg<'a> for &'a str {
-    fn into_format_arg(self) -> FormatArg<'a> {
-        FormatArg::Str(self)
+impl<'a, T: FormatValue> From<&'a T> for FormatArg<'a> {
+    fn from(value: &'a T) -> Self {
+        Self::Ref(value)
     }
 }
 
-impl<'a, T: Display + Debug> IntoFormatArg<'a> for &'a T {
-    fn into_format_arg(self) -> FormatArg<'a> {
-        FormatArg::Dyn(self)
+impl<'a> From<&'a str> for FormatArg<'a> {
+    fn from(value: &'a str) -> Self {
+        Self::Str(value)
     }
 }

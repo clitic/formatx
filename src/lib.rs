@@ -60,4 +60,4 @@ pub use ast::FormatType;
 pub use error::Error;
 pub use renderer::Renderer;
 pub use template::Template;
-pub use value::{FormatArg, FormatValue, IntoFormatArg};
+pub use value::{FormatArg, FormatValue};

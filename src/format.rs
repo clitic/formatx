@@ -32,19 +32,14 @@ pub fn render(
             Segment::EscapedClose => output.push('}'),
             Segment::Placeholder(placeholder) => {
                 // For `.*`, the precision arg is consumed BEFORE the value arg.
-                let resolved_precision = resolve_precision(
-                    &placeholder.spec.precision,
-                    args,
-                    named,
-                    &mut implicit_pos,
-                )?;
+                let resolved_precision =
+                    resolve_precision(&placeholder.spec.precision, args, named, &mut implicit_pos)?;
 
                 // Now resolve the argument index
-                let arg_index =
-                    resolve_argument(&placeholder.argument, &mut implicit_pos, named);
+                let arg_index = resolve_argument(&placeholder.argument, &mut implicit_pos, named);
 
                 let arg = match arg_index {
-                    Some(idx) if idx < args.len() => Some(args[idx].as_value()),
+                    Some(idx) if idx < args.len() => Some(args[idx].value()),
                     Some(_) | None => None,
                 };
 
@@ -64,8 +59,7 @@ pub fn render(
                 }
 
                 let arg = arg.unwrap();
-                let resolved_width =
-                    resolve_count_value(&placeholder.spec.width, args, named)?;
+                let resolved_width = resolve_count_value(&placeholder.spec.width, args, named)?;
 
                 check_format_type(placeholder.spec.format_type, placeholder.offset)?;
 
@@ -118,9 +112,7 @@ fn resolve_argument(
             Some(idx)
         }
         Argument::Positional(idx) => Some(*idx),
-        Argument::Named(name) => {
-            named.iter().find(|(n, _)| *n == *name).map(|(_, idx)| *idx)
-        }
+        Argument::Named(name) => named.iter().find(|(n, _)| *n == *name).map(|(_, idx)| *idx),
     }
 }
 
@@ -135,16 +127,14 @@ fn resolve_count_value(
         Count::Param(param) => {
             let idx = match param {
                 CountParam::Positional(idx) => *idx,
-                CountParam::Named(name) => {
-                    named
-                        .iter()
-                        .find(|(n, _)| *n == *name)
-                        .map(|(_, idx)| *idx)
-                        .ok_or_else(|| Error::Parse {
-                            offset: 0,
-                            message: format!("missing count argument: `{name}`"),
-                        })?
-                }
+                CountParam::Named(name) => named
+                    .iter()
+                    .find(|(n, _)| *n == *name)
+                    .map(|(_, idx)| *idx)
+                    .ok_or_else(|| Error::Parse {
+                        offset: 0,
+                        message: format!("missing count argument: `{name}`"),
+                    })?,
             };
             if idx >= args.len() {
                 return Err(Error::Parse {
@@ -152,7 +142,7 @@ fn resolve_count_value(
                     message: format!("count argument index {idx} out of range"),
                 });
             }
-            let formatted = format!("{}", args[idx].as_value());
+            let formatted = format!("{}", args[idx].value());
             formatted
                 .parse::<usize>()
                 .map(Some)
@@ -184,7 +174,7 @@ fn resolve_precision(
                     message: "not enough arguments for `.*` precision".to_string(),
                 });
             }
-            let formatted = format!("{}", args[idx].as_value());
+            let formatted = format!("{}", args[idx].value());
             formatted
                 .parse::<usize>()
                 .map(Some)
@@ -202,7 +192,10 @@ fn check_format_type(format_type: FormatType, offset: usize) -> Result<(), Error
         | FormatType::Debug
         | FormatType::DebugLowerHex
         | FormatType::DebugUpperHex => Ok(()),
-        _ => Err(Error::UnsupportedTrait { format_type, offset }),
+        _ => Err(Error::UnsupportedTrait {
+            format_type,
+            offset,
+        }),
     }
 }
 

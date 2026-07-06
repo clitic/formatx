@@ -27,7 +27,7 @@ use alloc::vec::Vec;
 /// ```
 #[derive(Debug)]
 pub struct Template<'a> {
-    parsed: FormatString<'a>,
+    pub(crate) parsed: FormatString<'a>,
 }
 
 impl<'a> Template<'a> {
@@ -72,11 +72,6 @@ impl<'a> Template<'a> {
                 None
             })
             .collect::<Vec<_>>()
-    }
-
-    /// Returns a reference to the parsed AST.
-    pub(crate) fn parsed(&self) -> &FormatString<'a> {
-        &self.parsed
     }
 }
 

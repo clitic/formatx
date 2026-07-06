@@ -1,11 +1,6 @@
 //! The [`Renderer`] builder - collects arguments and produces formatted output.
 
-use crate::{
-    error::Error,
-    format,
-    template::Template,
-    value::{FormatArg, IntoFormatArg},
-};
+use crate::{error::Error, format, template::Template, value::FormatArg};
 use alloc::{string::String, vec::Vec};
 
 /// A builder for rendering a [`Template`] with arguments.
@@ -41,20 +36,20 @@ impl<'a> Renderer<'a> {
     }
 
     /// Add a positional argument.
-    pub fn arg<V: IntoFormatArg<'a>>(&mut self, value: V) -> &mut Self {
-        self.args.push(value.into_format_arg());
+    pub fn arg<V: Into<FormatArg<'a>>>(&mut self, value: V) -> &mut Self {
+        self.args.push(value.into());
         self
     }
 
     /// Add a named argument.
-    pub fn named<V: IntoFormatArg<'a>>(&mut self, name: &'a str, value: V) -> &mut Self {
+    pub fn named<V: Into<FormatArg<'a>>>(&mut self, name: &'a str, value: V) -> &mut Self {
         let index = self.args.len();
-        self.args.push(value.into_format_arg());
+        self.args.push(value.into());
         self.named.push((name, index));
         self
     }
 
-    /// **Strict**: produce the formatted output.
+    /// Produce the formatted output.
     ///
     /// Returns `Err(Error::MissingArgument)` if any placeholder references an
     /// argument that was not provided.
@@ -62,7 +57,7 @@ impl<'a> Renderer<'a> {
         self.render_inner(true)
     }
 
-    /// **Lenient**: produce the formatted output.
+    /// Produce the formatted output.
     ///
     /// Missing arguments are replaced with an empty string `""` instead of
     /// producing an error.
@@ -74,7 +69,7 @@ impl<'a> Renderer<'a> {
         let mut output = String::new();
         format::render(
             &mut output,
-            self.template.parsed(),
+            &self.template.parsed,
             &self.args,
             &self.named,
             strict,
