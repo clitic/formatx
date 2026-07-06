@@ -1,9 +1,8 @@
 #![cfg_attr(not(test), no_std)]
 
-//! `formatx` lets you format strings at runtime using the same syntax as
-//! [`std::fmt`](https://doc.rust-lang.org/std/fmt/#syntax) (`{}`, `{:?}`, `{name}`, etc.), but with runtime template
-//! strings instead of compile-time literals with **zero** dependencies.
-//! This crate is `no_std` compatible (requires `alloc`).
+//! `formatx` lets you format strings at runtime using the familiar [`std::fmt`](https://doc.rust-lang.org/std/fmt/#syntax)
+//! syntax [`{}`, `{:?}`, `{name}`, etc.], with runtime template strings instead of compile-time literals.
+//! It has **zero** dependencies and is **no_std** compatible (requires `alloc`).
 //!
 //! # Using [`formatx!`]
 //!

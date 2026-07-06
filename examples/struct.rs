@@ -1,4 +1,4 @@
-use formatx::formatx;
+use formatx::{Template, formatx};
 
 #[derive(Debug)]
 struct Point {
@@ -29,7 +29,7 @@ fn main() {
     println!("{result}");
 
     // Template reuse
-    let template = formatx::Template::new("Point {name}: {point}").unwrap();
+    let template = Template::new("Point {name}: {point}").unwrap();
     let r1 = template
         .render()
         .named("name", &"Origin")
