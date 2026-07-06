@@ -2,73 +2,64 @@
 
 use alloc::vec::Vec;
 
-/// Byte range in the source format string.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Span {
-    /// Start byte offset (inclusive).
-    pub start: usize,
-    /// End byte offset (exclusive).
-    pub end: usize,
-}
-
 /// A parsed format string, split into segments.
-#[derive(Debug, Clone)]
-pub struct FormatString {
-    pub segments: Vec<Segment>,
+#[derive(Debug)]
+pub struct FormatString<'a> {
+    pub segments: Vec<Segment<'a>>,
 }
 
 /// A single piece of a format string.
-#[derive(Debug, Clone)]
-pub enum Segment {
-    /// Literal text - byte range into the source.
-    Literal(Span),
+#[derive(Debug)]
+pub enum Segment<'a> {
+    /// Literal text slice from the source.
+    Literal(&'a str),
     /// Escaped open brace `{{` -> `{`.
     EscapedOpen,
     /// Escaped close brace `}}` -> `}`.
     EscapedClose,
     /// A `{...}` placeholder.
-    Placeholder(Placeholder),
+    Placeholder(Placeholder<'a>),
 }
 
 /// A single `{...}` placeholder with its argument reference and format spec.
-#[derive(Debug, Clone)]
-pub struct Placeholder {
+#[derive(Debug)]
+pub struct Placeholder<'a> {
     /// Which argument this placeholder refers to.
-    pub argument: Argument,
+    pub argument: Argument<'a>,
     /// The format specification after the `:`.
-    pub spec: FormatSpec,
-    /// Byte span of the entire `{...}` in the source.
-    pub span: Span,
+    pub spec: FormatSpec<'a>,
+    /// Byte offset of the opening `{` in the source (for error reporting).
+    pub offset: usize,
 }
 
 /// How a placeholder references its argument.
-#[derive(Debug, Clone)]
-pub enum Argument {
+#[derive(Debug)]
+pub enum Argument<'a> {
     /// `{}` - uses the next implicit positional index.
     Implicit,
     /// `{0}`, `{1}` - explicit positional index.
     Positional(usize),
-    /// `{name}` - named argument, stored as byte range.
-    Named(Span),
+    /// `{name}` - named argument, resolved to a string slice.
+    Named(&'a str),
 }
 
 /// The full format specification after `:` inside a placeholder.
-#[derive(Debug, Clone, PartialEq)]
-pub struct FormatSpec {
+#[derive(Debug)]
+pub struct FormatSpec<'a> {
     pub fill: Option<char>,
     pub align: Option<Align>,
     pub sign: Option<Sign>,
     pub alternate: bool,
     pub zero_pad: bool,
-    pub width: Option<Count>,
-    pub precision: Option<Precision>,
+    pub width: Option<Count<'a>>,
+    pub precision: Option<Precision<'a>>,
     pub format_type: FormatType,
 }
 
-impl FormatSpec {
+impl FormatSpec<'_> {
     /// Returns a default spec (no formatting options).
-    pub const fn default() -> Self {
-        Self {
+    pub const fn default() -> FormatSpec<'static> {
+        FormatSpec {
             fill: None,
             align: None,
             sign: None,
@@ -84,12 +75,19 @@ impl FormatSpec {
     /// meaning we can take the fast path and `write!` directly.
     #[inline]
     pub fn is_default(&self) -> bool {
-        self == &Self::default()
+        self.fill.is_none()
+            && self.align.is_none()
+            && self.sign.is_none()
+            && !self.alternate
+            && !self.zero_pad
+            && self.width.is_none()
+            && self.precision.is_none()
+            && self.format_type == FormatType::Display
     }
 }
 
 /// Text alignment.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Align {
     Left,
     Center,
@@ -97,41 +95,41 @@ pub enum Align {
 }
 
 /// Sign display mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Sign {
     Plus,
     Minus,
 }
 
 /// A width or precision value - either a literal number or a parameter reference.
-#[derive(Debug, Clone, PartialEq)]
-pub enum Count {
+#[derive(Debug, Clone)]
+pub enum Count<'a> {
     /// A literal integer, e.g. `10` in `{:10}`.
     Literal(usize),
     /// A reference to another argument, e.g. `width$` in `{:width$}`.
-    Param(CountParam),
+    Param(CountParam<'a>),
 }
 
 /// A parameter reference for width/precision.
-#[derive(Debug, Clone, PartialEq)]
-pub enum CountParam {
+#[derive(Debug, Clone)]
+pub enum CountParam<'a> {
     /// `{:0$}` - positional argument index.
     Positional(usize),
-    /// `{:width$}` - named argument, stored as byte range.
-    Named(Span),
+    /// `{:width$}` - named argument, resolved to a string slice.
+    Named(&'a str),
 }
 
 /// Precision specification.
-#[derive(Debug, Clone, PartialEq)]
-pub enum Precision {
+#[derive(Debug, Clone)]
+pub enum Precision<'a> {
     /// `.5` or `.prec$` - a count value.
-    Count(Count),
+    Count(Count<'a>),
     /// `.*` - precision is the next implicit positional argument.
     Star,
 }
 
 /// The format trait to use.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FormatType {
     /// `{}` -`Display`
     Display,

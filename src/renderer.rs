@@ -73,11 +73,9 @@ impl<'a> Renderer<'a> {
     }
 
     fn render_inner(&self, strict: bool) -> Result<String, Error> {
-        let source = self.template.source();
-        let mut output = String::with_capacity(source.len());
+        let mut output = String::with_capacity(self.template.source().len());
         format::render(
             &mut output,
-            source,
             self.template.parsed(),
             &self.args,
             &self.named,

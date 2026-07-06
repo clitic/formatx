@@ -4,7 +4,7 @@ use crate::{ast::*, error::Error};
 use alloc::{format, string::ToString, vec::Vec};
 
 /// Parse a format string into a [`FormatString`] AST.
-pub fn parse(source: &str) -> Result<FormatString, Error> {
+pub fn parse<'a>(source: &'a str) -> Result<FormatString<'a>, Error> {
     let mut segments = Vec::new();
     let bytes = source.as_bytes();
     let len = bytes.len();
@@ -35,10 +35,7 @@ pub fn parse(source: &str) -> Result<FormatString, Error> {
                     pos += 2;
                 } else {
                     return Err(Error::Parse {
-                        span: Span {
-                            start: pos,
-                            end: pos + 1,
-                        },
+                        offset: pos,
                         message: "unmatched `}`".to_string(),
                     });
                 }
@@ -49,7 +46,7 @@ pub fn parse(source: &str) -> Result<FormatString, Error> {
                 while pos < len && bytes[pos] != b'{' && bytes[pos] != b'}' {
                     pos += 1;
                 }
-                segments.push(Segment::Literal(Span { start, end: pos }));
+                segments.push(Segment::Literal(&source[start..pos]));
             }
         }
     }
@@ -59,12 +56,12 @@ pub fn parse(source: &str) -> Result<FormatString, Error> {
 
 /// Parse the inside of a `{...}` placeholder, starting right after the `{`.
 /// Returns `(Placeholder, end_pos)` where `end_pos` is right after the closing `}`.
-fn parse_placeholder(
-    source: &str,
+fn parse_placeholder<'a>(
+    source: &'a str,
     mut pos: usize,
     brace_start: usize,
     implicit_counter: &mut usize,
-) -> Result<(Placeholder, usize), Error> {
+) -> Result<(Placeholder<'a>, usize), Error> {
     let bytes = source.as_bytes();
     let len = bytes.len();
 
@@ -82,10 +79,7 @@ fn parse_placeholder(
     // Expect closing `}`
     if pos >= len || bytes[pos] != b'}' {
         return Err(Error::Parse {
-            span: Span {
-                start: brace_start,
-                end: pos.min(len),
-            },
+            offset: brace_start,
             message: "unmatched `{`".to_string(),
         });
     }
@@ -94,30 +88,24 @@ fn parse_placeholder(
     let placeholder = Placeholder {
         argument,
         spec,
-        span: Span {
-            start: brace_start,
-            end: pos,
-        },
+        offset: brace_start,
     };
 
     Ok((placeholder, pos))
 }
 
 /// Parse the argument part of a placeholder (before `:` or `}`).
-fn parse_argument(
-    source: &str,
+fn parse_argument<'a>(
+    source: &'a str,
     pos: &mut usize,
     implicit_counter: &mut usize,
-) -> Result<Argument, Error> {
+) -> Result<Argument<'a>, Error> {
     let bytes = source.as_bytes();
     let len = bytes.len();
 
     if *pos >= len {
         return Err(Error::Parse {
-            span: Span {
-                start: *pos,
-                end: *pos,
-            },
+            offset: *pos,
             message: "unexpected end of format string".to_string(),
         });
     }
@@ -138,7 +126,7 @@ fn parse_argument(
         if *pos < len && (bytes[*pos] == b'}' || bytes[*pos] == b':') {
             let num_str = &source[start..*pos];
             let index = num_str.parse::<usize>().map_err(|_| Error::Parse {
-                span: Span { start, end: *pos },
+                offset: start,
                 message: format!("invalid positional argument: `{num_str}`"),
             })?;
             return Ok(Argument::Positional(index));
@@ -154,30 +142,24 @@ fn parse_argument(
             *pos += 1;
         }
         if *pos < len && (bytes[*pos] == b'}' || bytes[*pos] == b':') {
-            return Ok(Argument::Named(Span {
-                start: name_start,
-                end: *pos,
-            }));
+            return Ok(Argument::Named(&source[name_start..*pos]));
         }
         // Reset if not valid
         *pos = start;
     }
 
     Err(Error::Parse {
-        span: Span {
-            start,
-            end: *pos + 1,
-        },
+        offset: start,
         message: "invalid placeholder argument".to_string(),
     })
 }
 
 /// Parse the format spec after `:` - fill, align, sign, `#`, `0`, width, `.precision`, type.
-fn parse_format_spec(
-    source: &str,
+fn parse_format_spec<'a>(
+    source: &'a str,
     pos: &mut usize,
     implicit_counter: &mut usize,
-) -> Result<FormatSpec, Error> {
+) -> Result<FormatSpec<'a>, Error> {
     let bytes = source.as_bytes();
     let len = bytes.len();
     let mut spec = FormatSpec::default();
@@ -254,10 +236,7 @@ fn parse_format_spec(
 
         if *pos >= len {
             return Err(Error::Parse {
-                span: Span {
-                    start: *pos - 1,
-                    end: *pos,
-                },
+                offset: *pos - 1,
                 message: "expected precision after `.`".to_string(),
             });
         }
@@ -274,10 +253,7 @@ fn parse_format_spec(
                 spec.precision = Some(Precision::Count(count));
             } else {
                 return Err(Error::Parse {
-                    span: Span {
-                        start: *pos - 1,
-                        end: *pos,
-                    },
+                    offset: *pos - 1,
                     message: "expected precision value after `.`".to_string(),
                 });
             }
@@ -337,7 +313,7 @@ fn to_align(c: char) -> Option<Align> {
 }
 
 /// Parse a count value: literal integer or `name$` / `index$` parameter.
-fn parse_count(source: &str, pos: &mut usize) -> Result<Option<Count>, Error> {
+fn parse_count<'a>(source: &'a str, pos: &mut usize) -> Result<Option<Count<'a>>, Error> {
     let bytes = source.as_bytes();
     let len = bytes.len();
 
@@ -356,7 +332,7 @@ fn parse_count(source: &str, pos: &mut usize) -> Result<Option<Count>, Error> {
         if *pos < len && bytes[*pos] == b'$' {
             let num_str = &source[start..*pos];
             let index = num_str.parse::<usize>().map_err(|_| Error::Parse {
-                span: Span { start, end: *pos },
+                offset: start,
                 message: format!("invalid count parameter: `{num_str}`"),
             })?;
             *pos += 1; // skip `$`
@@ -365,7 +341,7 @@ fn parse_count(source: &str, pos: &mut usize) -> Result<Option<Count>, Error> {
         // Plain literal number
         let num_str = &source[start..*pos];
         let value = num_str.parse::<usize>().map_err(|_| Error::Parse {
-            span: Span { start, end: *pos },
+            offset: start,
             message: format!("invalid count: `{num_str}`"),
         })?;
         return Ok(Some(Count::Literal(value)));
@@ -378,11 +354,9 @@ fn parse_count(source: &str, pos: &mut usize) -> Result<Option<Count>, Error> {
             *pos += 1;
         }
         if *pos < len && bytes[*pos] == b'$' {
+            let name = &source[name_start..*pos];
             *pos += 1; // skip `$`
-            return Ok(Some(Count::Param(CountParam::Named(Span {
-                start: name_start,
-                end: *pos - 1, // exclude `$`
-            }))));
+            return Ok(Some(Count::Param(CountParam::Named(name))));
         }
         // Not a count param -reset
         *pos = start;
@@ -446,10 +420,7 @@ fn parse_format_type(source: &str, pos: &mut usize) -> Result<FormatType, Error>
         }
         c => {
             return Err(Error::Parse {
-                span: Span {
-                    start,
-                    end: *pos + 1,
-                },
+                offset: start,
                 message: format!("unknown format type: `{}`", c as char),
             });
         }
@@ -467,10 +438,6 @@ fn is_type_char(b: u8) -> bool {
 mod tests {
     use super::*;
 
-    fn resolve(source: &str, span: Span) -> &str {
-        &source[span.start..span.end]
-    }
-
     #[test]
     fn empty_string() {
         let result = parse("").unwrap();
@@ -479,11 +446,10 @@ mod tests {
 
     #[test]
     fn literal_only() {
-        let source = "hello world";
-        let result = parse(source).unwrap();
+        let result = parse("hello world").unwrap();
         assert_eq!(result.segments.len(), 1);
-        if let Segment::Literal(span) = &result.segments[0] {
-            assert_eq!(resolve(source, *span), "hello world");
+        if let Segment::Literal(s) = &result.segments[0] {
+            assert_eq!(*s, "hello world");
         } else {
             panic!("expected Literal");
         }
@@ -519,11 +485,10 @@ mod tests {
 
     #[test]
     fn named_args() {
-        let source = "{name}";
-        let result = parse(source).unwrap();
+        let result = parse("{name}").unwrap();
         if let Segment::Placeholder(p) = &result.segments[0] {
-            if let Argument::Named(span) = &p.argument {
-                assert_eq!(resolve(source, *span), "name");
+            if let Argument::Named(name) = &p.argument {
+                assert_eq!(*name, "name");
             } else {
                 panic!("expected Named");
             }
@@ -590,17 +555,16 @@ mod tests {
 
     #[test]
     fn param_width_and_precision() {
-        let source = "{:width$.prec$}";
-        let result = parse(source).unwrap();
+        let result = parse("{:width$.prec$}").unwrap();
         if let Segment::Placeholder(p) = &result.segments[0] {
-            if let Some(Count::Param(CountParam::Named(span))) = &p.spec.width {
-                assert_eq!(resolve(source, *span), "width");
+            if let Some(Count::Param(CountParam::Named(name))) = &p.spec.width {
+                assert_eq!(*name, "width");
             } else {
                 panic!("expected named width param");
             }
-            if let Some(Precision::Count(Count::Param(CountParam::Named(span)))) = &p.spec.precision
+            if let Some(Precision::Count(Count::Param(CountParam::Named(name)))) = &p.spec.precision
             {
-                assert_eq!(resolve(source, *span), "prec");
+                assert_eq!(*name, "prec");
             } else {
                 panic!("expected named precision param");
             }

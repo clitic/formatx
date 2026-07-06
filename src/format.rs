@@ -16,7 +16,6 @@ type NamedArgs<'a> = [(&'a str, usize)];
 /// Render a parsed [`FormatString`] into `output` using the provided arguments.
 pub fn render(
     output: &mut String,
-    source: &str,
     parsed: &FormatString,
     args: &[FormatArg],
     named: &NamedArgs,
@@ -26,8 +25,8 @@ pub fn render(
 
     for segment in &parsed.segments {
         match segment {
-            Segment::Literal(span) => {
-                output.push_str(&source[span.start..span.end]);
+            Segment::Literal(s) => {
+                output.push_str(s);
             }
             Segment::EscapedOpen => output.push('{'),
             Segment::EscapedClose => output.push('}'),
@@ -35,7 +34,6 @@ pub fn render(
                 // For `.*`, the precision arg is consumed BEFORE the value arg.
                 let resolved_precision = resolve_precision(
                     &placeholder.spec.precision,
-                    source,
                     args,
                     named,
                     &mut implicit_pos,
@@ -43,7 +41,7 @@ pub fn render(
 
                 // Now resolve the argument index
                 let arg_index =
-                    resolve_argument(&placeholder.argument, source, &mut implicit_pos, named);
+                    resolve_argument(&placeholder.argument, &mut implicit_pos, named);
 
                 let arg = match arg_index {
                     Some(idx) if idx < args.len() => Some(args[idx].as_value()),
@@ -55,11 +53,11 @@ pub fn render(
                         let name = match &placeholder.argument {
                             Argument::Implicit => format!("{}", implicit_pos - 1),
                             Argument::Positional(idx) => format!("{idx}"),
-                            Argument::Named(span) => source[span.start..span.end].to_string(),
+                            Argument::Named(n) => n.to_string(),
                         };
                         return Err(Error::MissingArgument {
                             name,
-                            span: placeholder.span,
+                            offset: placeholder.offset,
                         });
                     }
                     continue;
@@ -67,9 +65,9 @@ pub fn render(
 
                 let arg = arg.unwrap();
                 let resolved_width =
-                    resolve_count_value(&placeholder.spec.width, source, args, named)?;
+                    resolve_count_value(&placeholder.spec.width, args, named)?;
 
-                check_format_type(placeholder.spec.format_type, placeholder.span)?;
+                check_format_type(placeholder.spec.format_type, placeholder.offset)?;
 
                 // Fast path: default spec with Display
                 if placeholder.spec.is_default()
@@ -110,7 +108,6 @@ pub fn render(
 
 fn resolve_argument(
     argument: &Argument,
-    source: &str,
     implicit_pos: &mut usize,
     named: &NamedArgs,
 ) -> Option<usize> {
@@ -121,16 +118,14 @@ fn resolve_argument(
             Some(idx)
         }
         Argument::Positional(idx) => Some(*idx),
-        Argument::Named(span) => {
-            let name = &source[span.start..span.end];
-            named.iter().find(|(n, _)| *n == name).map(|(_, idx)| *idx)
+        Argument::Named(name) => {
+            named.iter().find(|(n, _)| *n == *name).map(|(_, idx)| *idx)
         }
     }
 }
 
 fn resolve_count_value(
     count: &Option<Count>,
-    source: &str,
     args: &[FormatArg],
     named: &NamedArgs,
 ) -> Result<Option<usize>, Error> {
@@ -140,21 +135,20 @@ fn resolve_count_value(
         Count::Param(param) => {
             let idx = match param {
                 CountParam::Positional(idx) => *idx,
-                CountParam::Named(span) => {
-                    let name = &source[span.start..span.end];
+                CountParam::Named(name) => {
                     named
                         .iter()
-                        .find(|(n, _)| *n == name)
+                        .find(|(n, _)| *n == *name)
                         .map(|(_, idx)| *idx)
                         .ok_or_else(|| Error::Parse {
-                            span: *span,
+                            offset: 0,
                             message: format!("missing count argument: `{name}`"),
                         })?
                 }
             };
             if idx >= args.len() {
                 return Err(Error::Parse {
-                    span: Span { start: 0, end: 0 },
+                    offset: 0,
                     message: format!("count argument index {idx} out of range"),
                 });
             }
@@ -163,7 +157,7 @@ fn resolve_count_value(
                 .parse::<usize>()
                 .map(Some)
                 .map_err(|_| Error::Parse {
-                    span: Span { start: 0, end: 0 },
+                    offset: 0,
                     message: format!("count argument `{formatted}` is not a valid usize"),
                 })
         }
@@ -172,7 +166,6 @@ fn resolve_count_value(
 
 fn resolve_precision(
     precision: &Option<Precision>,
-    source: &str,
     args: &[FormatArg],
     named: &NamedArgs,
     implicit_pos: &mut usize,
@@ -181,13 +174,13 @@ fn resolve_precision(
         return Ok(None);
     };
     match prec {
-        Precision::Count(count) => resolve_count_value(&Some(count.clone()), source, args, named),
+        Precision::Count(count) => resolve_count_value(&Some(count.clone()), args, named),
         Precision::Star => {
             let idx = *implicit_pos;
             *implicit_pos += 1;
             if idx >= args.len() {
                 return Err(Error::Parse {
-                    span: Span { start: 0, end: 0 },
+                    offset: 0,
                     message: "not enough arguments for `.*` precision".to_string(),
                 });
             }
@@ -196,20 +189,20 @@ fn resolve_precision(
                 .parse::<usize>()
                 .map(Some)
                 .map_err(|_| Error::Parse {
-                    span: Span { start: 0, end: 0 },
+                    offset: 0,
                     message: format!("`.*` precision argument `{formatted}` is not a valid usize"),
                 })
         }
     }
 }
 
-fn check_format_type(format_type: FormatType, span: Span) -> Result<(), Error> {
+fn check_format_type(format_type: FormatType, offset: usize) -> Result<(), Error> {
     match format_type {
         FormatType::Display
         | FormatType::Debug
         | FormatType::DebugLowerHex
         | FormatType::DebugUpperHex => Ok(()),
-        _ => Err(Error::UnsupportedTrait { format_type, span }),
+        _ => Err(Error::UnsupportedTrait { format_type, offset }),
     }
 }
 

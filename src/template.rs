@@ -1,7 +1,7 @@
 //! The [`Template`] struct - parse once, inspect, render many times.
 
 use crate::{
-    ast::{Argument, FormatString, Segment, Span},
+    ast::{Argument, FormatString, Segment},
     error::Error,
     parser,
     renderer::Renderer,
@@ -27,9 +27,10 @@ use core::fmt;
 ///     .unwrap();
 /// assert_eq!(result, "Alice scored 95.7%");
 /// ```
+#[derive(Debug)]
 pub struct Template<'a> {
     source: &'a str,
-    parsed: FormatString,
+    parsed: FormatString<'a>,
 }
 
 impl<'a> Template<'a> {
@@ -52,9 +53,9 @@ impl<'a> Template<'a> {
     pub fn contains(&self, name: &str) -> bool {
         self.parsed.segments.iter().any(|seg| {
             if let Segment::Placeholder(p) = seg
-                && let Argument::Named(span) = &p.argument
+                && let Argument::Named(n) = &p.argument
             {
-                return self.resolve(*span) == name;
+                return *n == name;
             }
             false
         })
@@ -67,9 +68,9 @@ impl<'a> Template<'a> {
             .iter()
             .filter_map(|seg| {
                 if let Segment::Placeholder(p) = seg
-                    && let Argument::Named(span) = &p.argument
+                    && let Argument::Named(n) = &p.argument
                 {
-                    return Some(self.resolve(*span));
+                    return Some(*n);
                 }
                 None
             })
@@ -78,31 +79,18 @@ impl<'a> Template<'a> {
 
     /// Returns the original format string.
     pub fn source(&self) -> &str {
-        &self.source
+        self.source
     }
 
     /// Returns a reference to the parsed AST.
-    pub(crate) fn parsed(&self) -> &FormatString {
+    pub(crate) fn parsed(&self) -> &FormatString<'a> {
         &self.parsed
-    }
-
-    /// Resolve a [`Span`] to a string slice from the source.
-    pub(crate) fn resolve(&self, span: Span) -> &str {
-        &self.source[span.start..span.end]
     }
 }
 
 impl<'a> fmt::Display for Template<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.source)
-    }
-}
-
-impl<'a> fmt::Debug for Template<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Template")
-            .field("source", &self.source)
-            .finish()
+        f.write_str(self.source)
     }
 }
 

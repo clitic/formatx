@@ -1,6 +1,6 @@
 //! Error types for formatx.
 
-use crate::ast::{FormatType, Span};
+use crate::ast::FormatType;
 use alloc::string::String;
 use core::fmt;
 
@@ -8,11 +8,11 @@ use core::fmt;
 #[derive(Debug)]
 pub enum Error {
     /// The format string could not be parsed.
-    Parse { span: Span, message: String },
+    Parse { offset: usize, message: String },
     /// A placeholder references an argument that was not provided.
-    MissingArgument { name: String, span: Span },
+    MissingArgument { name: String, offset: usize },
     /// A format type (e.g. `{:x}`) requires a trait we don't support.
-    UnsupportedTrait { format_type: FormatType, span: Span },
+    UnsupportedTrait { format_type: FormatType, offset: usize },
     /// An underlying `std::fmt::Error` occurred during formatting.
     Format(fmt::Error),
 }
@@ -20,8 +20,8 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Parse { message, span, .. } => {
-                write!(f, "parse error at byte {}: {}", span.start, message)
+            Self::Parse { message, offset, .. } => {
+                write!(f, "parse error at byte {}: {}", offset, message)
             }
             Self::MissingArgument { name, .. } => {
                 write!(f, "missing argument: `{name}`")
