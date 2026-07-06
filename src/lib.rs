@@ -1,12 +1,13 @@
 #![cfg_attr(not(test), no_std)]
 
 //! `formatx` lets you format strings at runtime using the same syntax as
-//! [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template
+//! [`std::fmt`](https://doc.rust-lang.org/std/fmt/#syntax) (`{}`, `{:?}`, `{name}`, etc.), but with runtime template
 //! strings instead of compile-time literals with **zero** dependencies.
+//! The crate is `no_std` compatible (requires `alloc`).
 //!
 //! # Using [`formatx!`]
 //!
-//! Works just like [`format!`], but accepts runtime template strings.
+//! Works just like [`format!`](alloc::format!), but accepts runtime template strings.
 //!
 //! ```
 //! use formatx::formatx;
@@ -29,13 +30,13 @@
 //! let template = Template::new("{name} has {n} items").unwrap();
 //!
 //! let r1 = template.render()
-//!     .named("name", &"Alice")
+//!     .named("name", "Alice")
 //!     .named("n", &3)
 //!     .finish()
 //!     .unwrap();
 //!
 //! let r2 = template.render()
-//!     .named("name", &"Bob")
+//!     .named("name", "Bob")
 //!     .named("n", &7)
 //!     .finish()
 //!     .unwrap();
@@ -54,12 +55,6 @@ mod parser;
 mod renderer;
 mod template;
 mod value;
-
-#[doc(hidden)]
-pub mod __private {
-    pub use alloc::string::String;
-    pub use core::result::Result;
-}
 
 pub use ast::FormatType;
 pub use error::Error;

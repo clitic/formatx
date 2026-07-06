@@ -9,7 +9,8 @@ use crate::{
 use alloc::vec::Vec;
 use core::fmt;
 
-/// An owned, parsed format string that can be rendered many times with different arguments.
+/// A parsed format string that borrows the source and can be rendered many times
+/// with different arguments.
 ///
 /// # Examples
 ///
@@ -20,7 +21,7 @@ use core::fmt;
 /// assert!(template.contains("name"));
 ///
 /// let result = template.render()
-///     .named("name", &"Alice")
+///     .named("name", "Alice")
 ///     .named("score", &95.678)
 ///     .finish()
 ///     .unwrap();
@@ -105,8 +106,10 @@ impl<'a> fmt::Debug for Template<'a> {
     }
 }
 
-impl<'a> From<&'a str> for Template<'a> {
-    fn from(source: &'a str) -> Self {
-        Self::new(source).unwrap()
+impl<'a> TryFrom<&'a str> for Template<'a> {
+    type Error = Error;
+
+    fn try_from(source: &'a str) -> Result<Self, Self::Error> {
+        Self::new(source)
     }
 }

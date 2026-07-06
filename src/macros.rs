@@ -2,8 +2,8 @@
 
 /// Format a runtime string in **strict mode**.
 ///
-/// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Produces [`Error::MissingArgument`](crate::Error::MissingArgument)
-/// if any placeholder references an argument that was not provided.
+/// Returns [`Result`](core::result::Result)`<`[`String`](alloc::string::String)`, `[`Error`](crate::Error)`>`.
+/// Produces [`Error::MissingArgument`](crate::Error::MissingArgument) if any placeholder references an argument that was not provided.
 ///
 /// # Examples
 ///
@@ -20,25 +20,15 @@
 /// ```
 #[macro_export]
 macro_rules! formatx {
-    ($template:expr $(,)?) => {
-        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
-            $crate::Template::new($template)?.render().finish()
-        })()
-    };
-    ($template:expr, $($args:tt)*) => {
-        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
-            let t = $crate::Template::new($template)?;
-            let mut r = t.render();
-            $crate::_formatx_internal!(r, $($args)*);
-            r.finish()
-        })()
+    ($($args:tt)*) => {
+        $crate::_formatx_impl!(finish, $($args)*)
     };
 }
 
 /// Format a runtime string in **lenient mode**.
 ///
-/// Returns [`Result`]`<`[`String`]`, `[`Error`](crate::Error)`>`. Missing arguments are replaced with an
-/// empty string `""` instead of producing an error.
+/// Returns [`Result`](core::result::Result)`<`[`String`](alloc::string::String)`, `[`Error`](crate::Error)`>`.
+/// Missing arguments are replaced with an empty string `""` instead of producing an error.
 ///
 /// # Examples
 ///
@@ -51,39 +41,45 @@ macro_rules! formatx {
 /// ```
 #[macro_export]
 macro_rules! formatxl {
-    ($template:expr $(,)?) => {
-        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
-            $crate::Template::new($template)?.render().finish_lenient()
-        })()
-    };
-    ($template:expr, $($args:tt)*) => {
-        (|| -> $crate::__private::Result<$crate::__private::String, $crate::Error> {
-            let t = $crate::Template::new($template)?;
-            let mut r = t.render();
-            $crate::_formatx_internal!(r, $($args)*);
-            r.finish_lenient()
-        })()
+    ($($args:tt)*) => {
+        $crate::_formatx_impl!(finish_lenient, $($args)*)
     };
 }
 
-/// Internal helper macro for argument collection.
-///
-/// Recursively processes `name = value` (named) and `value` (positional) arguments.
 #[macro_export]
 #[doc(hidden)]
-macro_rules! _formatx_internal {
-    ($r:expr, $name:ident = $value:expr $(,)?) => {
+macro_rules! _formatx_impl {
+    // Template only, no arguments.
+    ($finish:ident, $template:expr $(,)?) => {
+        (|| {
+            $crate::Template::new($template)?.render().$finish()
+        })()
+    };
+    // Template with arguments.
+    ($finish:ident, $template:expr, $($args:tt)*) => {
+        (|| {
+            let t = $crate::Template::new($template)?;
+            let mut r = t.render();
+            $crate::_formatx_impl!(@arg r, $($args)*);
+            r.$finish()
+        })()
+    };
+    // Named argument (last or trailing comma).
+    (@arg $r:expr, $name:ident = $value:expr $(,)?) => {
         $r.named(stringify!($name), &$value);
     };
-    ($r:expr, $value:expr $(,)?) => {
+    // Positional argument (last or trailing comma).
+    (@arg $r:expr, $value:expr $(,)?) => {
         $r.arg(&$value);
     };
-    ($r:expr, $name:ident = $value:expr, $($rest:tt)*) => {
+    // Named argument followed by more arguments.
+    (@arg $r:expr, $name:ident = $value:expr, $($rest:tt)*) => {
         $r.named(stringify!($name), &$value);
-        $crate::_formatx_internal!($r, $($rest)*);
+        $crate::_formatx_impl!(@arg $r, $($rest)*);
     };
-    ($r:expr, $value:expr, $($rest:tt)*) => {
+    // Positional argument followed by more arguments.
+    (@arg $r:expr, $value:expr, $($rest:tt)*) => {
         $r.arg(&$value);
-        $crate::_formatx_internal!($r, $($rest)*);
+        $crate::_formatx_impl!(@arg $r, $($rest)*);
     };
 }

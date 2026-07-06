@@ -7,7 +7,7 @@
 [![Crate License](https://img.shields.io/crates/l/formatx?style=flat-square)](https://crates.io/crates/formatx)
 [![Repo Size](https://img.shields.io/github/repo-size/clitic/formatx?logo=github&style=flat-square)](https://github.com/clitic/formatx)
 
-`formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template strings instead of compile-time literals with **zero** dependencies.
+`formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template strings instead of compile-time literals with **zero** dependencies. The crate is `no_std` compatible (requires `alloc`).
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/clitic/formatx/refs/heads/main/images/benchmark.svg" width="700px">
@@ -19,7 +19,7 @@ Add this to your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-formatx = "0.3"
+formatx = "0.4"
 ```
 
 Or add from command line.
@@ -57,13 +57,13 @@ use formatx::Template;
 let template = Template::new("{name} has {n} items").unwrap();
 
 let r1 = template.render()
-    .named("name", &"Alice")
+    .named("name", "Alice")
     .named("n", &3)
     .finish()
     .unwrap();
 
 let r2 = template.render()
-    .named("name", &"Bob")
+    .named("name", "Bob")
     .named("n", &7)
     .finish()
     .unwrap();

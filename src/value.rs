@@ -12,6 +12,8 @@ pub trait FormatValue: Display + Debug {}
 
 impl<T: Display + Debug + ?Sized> FormatValue for T {}
 
+/// A format argument that can hold either a trait object reference or a string
+/// slice directly, enabling zero-allocation handling of `&str` values.
 pub enum FormatArg<'a> {
     /// Any `Sized` value borrowed as a trait object.
     Dyn(&'a dyn FormatValue),
@@ -31,6 +33,11 @@ impl<'a> FormatArg<'a> {
 }
 
 /// Conversion into a [`FormatArg`] without allocation.
+///
+/// This trait is implemented for `&str` (→ [`FormatArg::Str`]) and for
+/// `&T where T: Display + Debug` (→ [`FormatArg::Dyn`]), allowing both
+/// to be passed directly to [`Renderer::arg`](crate::Renderer::arg) and
+/// [`Renderer::named`](crate::Renderer::named).
 pub trait IntoFormatArg<'a> {
     /// Convert `self` into a [`FormatArg`].
     fn into_format_arg(self) -> FormatArg<'a>;

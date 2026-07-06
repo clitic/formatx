@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `no_std` support — the crate now works in `no_std` environments (requires `alloc`). ([#13](https://github.com/clitic/formatx/pull/13))
+- `&str` values can now be passed directly to `Renderer::arg()` and `Renderer::named()` without wrapping in `&`. ([#13](https://github.com/clitic/formatx/pull/13))
+- `FormatArg` enum for zero-allocation argument storage with a dedicated `Str` variant for string slices.
+- `IntoFormatArg` trait for ergonomic argument conversion.
+- `FormatValue` is now implemented for unsized types (`?Sized` bound).
+
+### Changed
+
+- **Breaking:** `Template` now borrows the source string (`Template<'a>` with `&'a str`) instead of owning a `String`. This eliminates an allocation but requires the source to outlive the template.
+- **Breaking:** `Template::new()` now takes `&'a str` directly instead of `S: Into<String>`.
+- **Breaking:** `FromStr` impl for `Template` removed; replaced with `TryFrom<&'a str>`.
+- `Renderer::arg()` and `Renderer::named()` now accept `impl IntoFormatArg<'a>` instead of `&'a (impl Display + Debug)`.
+- `FormatSpec` and related AST types now derive `PartialEq`; `FormatSpec::is_default()` simplified.
+- Introduced `NamedArgs` type alias for internal readability.
+
 ## [0.3.0] - 2026-06-15
 
 ### Added
