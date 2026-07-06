@@ -101,7 +101,7 @@ pub enum Sign {
 }
 
 /// A width or precision value - either a literal number or a parameter reference.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Count<'a> {
     /// A literal integer, e.g. `10` in `{:10}`.
     Literal(usize),
@@ -110,7 +110,7 @@ pub enum Count<'a> {
 }
 
 /// A parameter reference for width/precision.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum CountParam<'a> {
     /// `{:0$}` - positional argument index.
     Positional(usize),
@@ -119,7 +119,7 @@ pub enum CountParam<'a> {
 }
 
 /// Precision specification.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Precision<'a> {
     /// `.5` or `.prec$` - a count value.
     Count(Count<'a>),

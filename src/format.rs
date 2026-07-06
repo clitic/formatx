@@ -122,8 +122,12 @@ fn resolve_count_value(
     named: &NamedArgs,
 ) -> Result<Option<usize>, Error> {
     let Some(count) = count else { return Ok(None) };
+    resolve_count(count, args, named).map(Some)
+}
+
+fn resolve_count(count: &Count, args: &[FormatArg], named: &NamedArgs) -> Result<usize, Error> {
     match count {
-        Count::Literal(n) => Ok(Some(*n)),
+        Count::Literal(n) => Ok(*n),
         Count::Param(param) => {
             let idx = match param {
                 CountParam::Positional(idx) => *idx,
@@ -143,13 +147,10 @@ fn resolve_count_value(
                 });
             }
             let formatted = format!("{}", args[idx].value());
-            formatted
-                .parse::<usize>()
-                .map(Some)
-                .map_err(|_| Error::Parse {
-                    offset: 0,
-                    message: format!("count argument `{formatted}` is not a valid usize"),
-                })
+            formatted.parse::<usize>().map_err(|_| Error::Parse {
+                offset: 0,
+                message: format!("count argument `{formatted}` is not a valid usize"),
+            })
         }
     }
 }
@@ -164,7 +165,7 @@ fn resolve_precision(
         return Ok(None);
     };
     match prec {
-        Precision::Count(count) => resolve_count_value(&Some(count.clone()), args, named),
+        Precision::Count(count) => resolve_count(count, args, named).map(Some),
         Precision::Star => {
             let idx = *implicit_pos;
             *implicit_pos += 1;

@@ -7,7 +7,7 @@
 [![Crate License](https://img.shields.io/crates/l/formatx?style=flat-square)](https://crates.io/crates/formatx)
 [![Repo Size](https://img.shields.io/github/repo-size/clitic/formatx?logo=github&style=flat-square)](https://github.com/clitic/formatx)
 
-`formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template strings instead of compile-time literals with **zero** dependencies. The crate is `no_std` compatible (requires `alloc`).
+`formatx` lets you format strings at runtime using the same syntax as [`std::fmt`] (`{}`, `{:?}`, `{name}`, etc.), but with runtime template strings instead of compile-time literals with **zero** dependencies. This crate is `no_std` compatible (requires `alloc`).
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/clitic/formatx/refs/heads/main/images/benchmark.svg" width="700px">
