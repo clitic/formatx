@@ -73,7 +73,6 @@ impl FormatSpec<'_> {
 
     /// Returns `true` if this spec has no formatting options at all —
     /// meaning we can take the fast path and `write!` directly.
-    #[inline]
     pub fn is_default(&self) -> bool {
         self.fill.is_none()
             && self.align.is_none()

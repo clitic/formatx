@@ -41,14 +41,12 @@ impl<'a> Renderer<'a> {
     }
 
     /// Add a positional argument.
-    #[inline]
     pub fn arg<V: IntoFormatArg<'a>>(&mut self, value: V) -> &mut Self {
         self.args.push(value.into_format_arg());
         self
     }
 
     /// Add a named argument.
-    #[inline]
     pub fn named<V: IntoFormatArg<'a>>(&mut self, name: &'a str, value: V) -> &mut Self {
         let index = self.args.len();
         self.args.push(value.into_format_arg());

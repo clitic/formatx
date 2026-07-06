@@ -23,7 +23,6 @@ pub enum FormatArg<'a> {
 
 impl<'a> FormatArg<'a> {
     /// Borrow this argument as a `&dyn FormatValue` for formatting.
-    #[inline]
     pub(crate) fn as_value(&self) -> &dyn FormatValue {
         match self {
             FormatArg::Dyn(value) => *value,
@@ -44,14 +43,12 @@ pub trait IntoFormatArg<'a> {
 }
 
 impl<'a> IntoFormatArg<'a> for &'a str {
-    #[inline]
     fn into_format_arg(self) -> FormatArg<'a> {
         FormatArg::Str(self)
     }
 }
 
 impl<'a, T: Display + Debug> IntoFormatArg<'a> for &'a T {
-    #[inline]
     fn into_format_arg(self) -> FormatArg<'a> {
         FormatArg::Dyn(self)
     }
