@@ -7,10 +7,8 @@ use crate::{
     renderer::Renderer,
 };
 use alloc::vec::Vec;
-use core::fmt;
 
-/// A parsed format string that borrows the source and can be rendered many times
-/// with different arguments.
+/// A parsed format string that can be rendered many times with different arguments.
 ///
 /// # Examples
 ///
@@ -29,7 +27,6 @@ use core::fmt;
 /// ```
 #[derive(Debug)]
 pub struct Template<'a> {
-    source: &'a str,
     parsed: FormatString<'a>,
 }
 
@@ -39,7 +36,7 @@ impl<'a> Template<'a> {
     /// Returns `Err` if the format string is malformed (unmatched braces, invalid specs, etc.).
     pub fn new(source: &'a str) -> Result<Self, Error> {
         let parsed = parser::parse(source)?;
-        Ok(Self { source, parsed })
+        Ok(Self { parsed })
     }
 
     /// Create a [`Renderer`] to format this template with arguments.
@@ -77,20 +74,9 @@ impl<'a> Template<'a> {
             .collect::<Vec<_>>()
     }
 
-    /// Returns the original format string.
-    pub fn source(&self) -> &str {
-        self.source
-    }
-
     /// Returns a reference to the parsed AST.
     pub(crate) fn parsed(&self) -> &FormatString<'a> {
         &self.parsed
-    }
-}
-
-impl<'a> fmt::Display for Template<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.source)
     }
 }
 

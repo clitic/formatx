@@ -73,7 +73,7 @@ impl<'a> Renderer<'a> {
     }
 
     fn render_inner(&self, strict: bool) -> Result<String, Error> {
-        let mut output = String::with_capacity(self.template.source().len());
+        let mut output = String::new();
         format::render(
             &mut output,
             self.template.parsed(),
