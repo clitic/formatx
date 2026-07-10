@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-10
+
+### Changed
+
+- `Template::new()` now accepts `AsRef<str>` instead of `&str`, allowing `&String`, `&Cow<str>`, etc. to be passed directly. ([#14](https://github.com/clitic/formatx/issues/14))
+
 ## [0.4.0] - 2026-07-06
 
 ### Added
@@ -79,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2022-08-03
 
-[Unreleased]: https://github.com/clitic/formatx/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/clitic/formatx/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/clitic/formatx/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/clitic/formatx/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/clitic/formatx/compare/0.2.4...0.3.0
 [0.2.4]: https://github.com/clitic/formatx/compare/0.2.3...0.2.4
