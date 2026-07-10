@@ -52,13 +52,15 @@ macro_rules! _formatx_impl {
     // Template only, no arguments.
     ($finish:ident, $template:expr $(,)?) => {
         (|| {
-            $crate::Template::new($template)?.render().$finish()
+            let s = $template;
+            $crate::Template::new(&s)?.render().$finish()
         })()
     };
     // Template with arguments.
     ($finish:ident, $template:expr, $($args:tt)*) => {
         (|| {
-            let t = $crate::Template::new($template)?;
+            let s = $template;
+            let t = $crate::Template::new(&s)?;
             let mut r = t.render();
             $crate::_formatx_impl!(@arg r, $($args)*);
             r.$finish()

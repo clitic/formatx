@@ -34,8 +34,8 @@ impl<'a> Template<'a> {
     /// Parse a format string into a reusable template.
     ///
     /// Returns `Err` if the format string is malformed (unmatched braces, invalid specs, etc.).
-    pub fn new(source: &'a str) -> Result<Self, Error> {
-        let parsed = parser::parse(source)?;
+    pub fn new<S: AsRef<str> + ?Sized>(source: &'a S) -> Result<Self, Error> {
+        let parsed = parser::parse(source.as_ref())?;
         Ok(Self { parsed })
     }
 
