@@ -51,37 +51,42 @@ macro_rules! formatxl {
 macro_rules! _formatx_impl {
     // Template only, no arguments.
     ($finish:ident, $template:expr $(,)?) => {
-        (|| {
-            let s = $template;
-            $crate::Template::new(&s)?.render().$finish()
-        })()
+        match $crate::Template::new(&$template) {
+            Ok(t) => t.render().$finish(),
+            Err(e) => Err(e),
+        }
     };
     // Template with arguments.
     ($finish:ident, $template:expr, $($args:tt)*) => {
-        (|| {
-            let s = $template;
-            let t = $crate::Template::new(&s)?;
-            let mut r = t.render();
-            $crate::_formatx_impl!(@arg r, $($args)*);
-            r.$finish()
-        })()
+        match $crate::Template::new(&$template) {
+            Ok(t) => {
+                let mut r = t.render();
+                $crate::_formatx_impl!(@arg r, $($args)*);
+                r.$finish()
+            }
+            Err(e) => Err(e),
+        }
     };
     // Named argument (last or trailing comma).
     (@arg $r:expr, $name:ident = $value:expr $(,)?) => {
-        $r.named(stringify!($name), &$value);
+        let v = &$value;
+        $r.named(stringify!($name), v);
     };
     // Positional argument (last or trailing comma).
     (@arg $r:expr, $value:expr $(,)?) => {
-        $r.arg(&$value);
+        let v = &$value;
+        $r.arg(v);
     };
     // Named argument followed by more arguments.
     (@arg $r:expr, $name:ident = $value:expr, $($rest:tt)*) => {
-        $r.named(stringify!($name), &$value);
+        let v = &$value;
+        $r.named(stringify!($name), v);
         $crate::_formatx_impl!(@arg $r, $($rest)*);
     };
     // Positional argument followed by more arguments.
     (@arg $r:expr, $value:expr, $($rest:tt)*) => {
-        $r.arg(&$value);
+        let v = &$value;
+        $r.arg(v);
         $crate::_formatx_impl!(@arg $r, $($rest)*);
     };
 }

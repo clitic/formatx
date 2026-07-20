@@ -32,13 +32,13 @@ fn main() {
     let template = Template::new("Point {name}: {point}").unwrap();
     let r1 = template
         .render()
-        .named("name", &"Origin")
+        .named("name", "Origin")
         .named("point", &origin)
         .finish()
         .unwrap();
     let r2 = template
         .render()
-        .named("name", &"Target")
+        .named("name", "Target")
         .named("point", &target)
         .finish()
         .unwrap();
